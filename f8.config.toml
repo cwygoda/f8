@@ -1,0 +1,25 @@
+contentDir = "content"
+imageDir = "images"
+outputDir = ".f8"
+cacheDir = ".f8/cache"
+
+[image]
+widths = [480, 768, 1024, 1440, 1920, 2560]
+formats = ["avif", "webp", "jpeg"]
+allowUpscale = false
+linearResize = true
+interpolation = "mks"
+
+[image.quality]
+avif = 72
+webp = 82
+jpeg = 88
+
+[gallery]
+layout = "masonry"
+gap = "clamp(0.75rem, 2vw, 1.5rem)"
+maxColumns = 4
+
+[viewer]
+enableMap = true
+enableExifOverlay = true

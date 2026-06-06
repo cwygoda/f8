@@ -8,30 +8,30 @@ This checklist tracks delivery against the project requirements in [`PRD.md`](./
 
 **PRD references:** [§6.1 CLI](./PRD.md#61-cli), [§8 Configuration](./PRD.md#8-configuration), [§14 Developer Experience](./PRD.md#14-developer-experience), [§15 Quality Gates](./PRD.md#15-quality-gates)
 
-- [ ] Set up repository structure.
-- [ ] Set up SvelteKit app/library structure.
-- [ ] Configure strict TypeScript.
-- [ ] Add pnpm workspace/project setup.
-- [ ] Add mise configuration.
-- [ ] Add Taskfile commands.
-- [ ] Add `f8.config.toml` loading and schema validation foundation.
-- [ ] Add initial CLI entrypoint.
-- [ ] Add basic `f8 init` command.
-- [ ] Add lint command.
-- [ ] Add test command.
-- [ ] Add build command.
-- [ ] Add `task check` quality gate command.
-- [ ] Add Conventional Commits validation for local hooks and CI.
-- [ ] Add initial README/docs.
+- [x] Set up repository structure.
+- [x] Set up SvelteKit app/library structure.
+- [x] Configure strict TypeScript.
+- [x] Add pnpm workspace/project setup.
+- [x] Add mise configuration.
+- [x] Add Taskfile commands.
+- [x] Add `f8.config.toml` loading and schema validation foundation.
+- [x] Add initial CLI entrypoint.
+- [x] Add basic `f8 init` command.
+- [x] Add lint command.
+- [x] Add test command.
+- [x] Add build command.
+- [x] Add `task check` quality gate command.
+- [x] Add Conventional Commits validation for local hooks and CI.
+- [x] Add initial README/docs.
 
 **Exit criteria**
 
-- [ ] `pnpm install` works from a clean checkout.
-- [ ] `pnpm lint` passes.
-- [ ] `pnpm test` passes.
-- [ ] `pnpm build` passes.
-- [ ] `task check` passes.
-- [ ] Invalid commit messages are rejected by the commit quality gate.
+- [x] `pnpm install` works from a clean checkout.
+- [x] `pnpm lint` passes.
+- [x] `pnpm test` passes.
+- [x] `pnpm build` passes.
+- [x] `task check` passes.
+- [x] Invalid commit messages are rejected by the commit quality gate.
 
 ---
 

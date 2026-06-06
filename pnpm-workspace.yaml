@@ -1,0 +1,5 @@
+packages:
+  - .
+allowBuilds:
+  '@go-task/cli': true
+  esbuild: true

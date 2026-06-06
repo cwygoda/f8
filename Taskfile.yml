@@ -1,0 +1,37 @@
+version: '3'
+
+silent: false
+
+tasks:
+  install:
+    desc: Install project dependencies
+    cmds:
+      - pnpm install
+
+  lint:
+    desc: Run ESLint and Prettier checks
+    cmds:
+      - pnpm lint
+
+  test:
+    desc: Run unit tests
+    cmds:
+      - pnpm test
+
+  build:
+    desc: Build the SvelteKit app and package artifacts
+    cmds:
+      - pnpm build
+
+  check:
+    desc: Run the Milestone 1 quality gate
+    cmds:
+      - pnpm lint
+      - pnpm check
+      - pnpm test
+      - pnpm build
+
+  quality:
+    desc: Alias for the complete quality gate
+    cmds:
+      - task: check

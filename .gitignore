@@ -1,0 +1,13 @@
+node_modules
+.pnpm-store
+.svelte-kit
+build
+dist
+coverage
+.f8
+.cache
+.env
+.env.*
+!.env.example
+.DS_Store
+.husky/_
