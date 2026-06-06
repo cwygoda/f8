@@ -10,8 +10,8 @@
   <p class="eyebrow">f8</p>
   <h1>Image-first publishing toolkit for SvelteKit.</h1>
   <p>
-    Milestone 1 establishes the repository, SvelteKit foundation, CLI,
-    configuration loading, and quality gates.
+    Milestone 2 adds cache-aware image discovery, responsive variants, sidecar
+    metadata, EXIF artifacts, blurhash placeholders, and dominant colors.
   </p>
 </main>
 

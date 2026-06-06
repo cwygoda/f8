@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import sharp from 'sharp';
 import { describe, expect, it } from 'vitest';
 
 import { initProject, main } from '../src/cli/index.js';
@@ -56,5 +57,30 @@ describe('f8 CLI', () => {
         join(cwd, 'content', 'index.md')
       ])
     );
+  });
+
+  it('builds images from the CLI', async () => {
+    const cwd = fixtureDir();
+    initProject({ cwd, force: false });
+    await sharp({
+      create: {
+        width: 16,
+        height: 8,
+        channels: 3,
+        background: '#224466'
+      }
+    })
+      .jpeg()
+      .toFile(join(cwd, 'images', 'cli-photo.jpg'));
+    const messages: string[] = [];
+
+    const exitCode = await main(['build-images'], {
+      cwd,
+      stdout: (message) => messages.push(message)
+    });
+
+    expect(exitCode).toBe(0);
+    expect(messages.join('\n')).toContain('Processed 1 image(s).');
+    expect(existsSync(join(cwd, '.f8', 'cache', 'cli-photo'))).toBe(true);
   });
 });

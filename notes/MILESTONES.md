@@ -39,32 +39,32 @@ This checklist tracks delivery against the project requirements in [`PRD.md`](./
 
 **PRD references:** [§6.2 Image Input](./PRD.md#62-image-input), [§6.3 Image Pipeline](./PRD.md#63-image-pipeline), [§6.4 Sidecar Metadata](./PRD.md#64-sidecar-metadata), [§8 Configuration](./PRD.md#8-configuration), [§9 Data Model](./PRD.md#9-data-model)
 
-- [ ] Implement image discovery for supported formats.
-- [ ] Implement recursive directory scanning.
-- [ ] Implement configurable image sorting.
-- [ ] Generate responsive variants.
-- [ ] Preserve original base filename in generated asset names.
-- [ ] Implement configured widths/formats/quality from `f8.config.toml`.
-- [ ] Prevent upscaling by default.
-- [ ] Implement high-quality resizing defaults, including linear resize/MKS interpolation where supported.
-- [ ] Extract normalized EXIF metadata.
-- [ ] Generate basic `exif.json` artifacts.
-- [ ] Generate blurhash placeholders.
-- [ ] Extract dominant colors.
-- [ ] Parse sidecar Markdown + YAML frontmatter.
-- [ ] Apply sidecar metadata override precedence.
-- [ ] Implement cache key generation from relative path, source hash/mtime, config hash, sidecar hash, and pipeline version.
-- [ ] Write metadata artifacts matching `F8ImageMetadata`.
-- [ ] Add `f8 build-images` command.
+- [x] Implement image discovery for supported formats.
+- [x] Implement recursive directory scanning.
+- [x] Implement configurable image sorting.
+- [x] Generate responsive variants.
+- [x] Preserve original base filename in generated asset names.
+- [x] Implement configured widths/formats/quality from `f8.config.toml`.
+- [x] Prevent upscaling by default.
+- [x] Implement high-quality resizing defaults, including linear resize/MKS interpolation where supported.
+- [x] Extract normalized EXIF metadata.
+- [x] Generate basic `exif.json` artifacts.
+- [x] Generate blurhash placeholders.
+- [x] Extract dominant colors.
+- [x] Parse sidecar Markdown + YAML frontmatter.
+- [x] Apply sidecar metadata override precedence.
+- [x] Implement cache key generation from relative path, source hash/mtime, config hash, sidecar hash, and pipeline version.
+- [x] Write metadata artifacts matching `F8ImageMetadata`.
+- [x] Add `f8 build-images` command.
 
 **Exit criteria**
 
-- [ ] Fixture image directory produces expected responsive variants.
-- [ ] Fixture image directory produces expected metadata artifacts.
-- [ ] Re-running unchanged pipeline uses cache.
-- [ ] Changing config invalidates affected cache entries.
-- [ ] Changing sidecar metadata invalidates affected cache entries.
-- [ ] Unit tests cover discovery, cache keys, sidecars, variant naming, and metadata normalization.
+- [x] Fixture image directory produces expected responsive variants.
+- [x] Fixture image directory produces expected metadata artifacts.
+- [x] Re-running unchanged pipeline uses cache.
+- [x] Changing config invalidates affected cache entries.
+- [x] Changing sidecar metadata invalidates affected cache entries.
+- [x] Unit tests cover discovery, cache keys, sidecars, variant naming, and metadata normalization.
 
 ---
 

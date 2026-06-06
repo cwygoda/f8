@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import { F8ConfigError, loadConfig } from '../lib/config/index.js';
+import { processImageDirectory } from '../lib/pipeline/index.js';
 
 const HELP_TEXT = `f8 — image-first publishing toolkit for SvelteKit
 
@@ -13,11 +14,12 @@ Usage:
 Commands:
   init          Create starter f8 project files
   config        Validate and print the resolved configuration
+  build-images  Generate responsive image variants and metadata artifacts
   help          Show this help message
 
 Options:
   -h, --help    Show this help message
-  --force       Overwrite files when used with init
+  --force       Overwrite files when used with init or build-images
 `;
 
 export interface CliIO {
@@ -63,6 +65,17 @@ export async function main(
     if (command === 'config') {
       const { config, path } = loadConfig({ cwd });
       stdout(JSON.stringify({ path, config }, null, 2));
+      return 0;
+    }
+
+    if (command === 'build-images') {
+      const { config } = loadConfig({ cwd });
+      const result = await processImageDirectory({
+        cwd,
+        config,
+        force: args.includes('--force')
+      });
+      stdout(formatBuildImagesResult(result));
       return 0;
     }
 
@@ -143,6 +156,16 @@ function formatInitResult(result: InitResult): string {
   return lines.join('\n');
 }
 
+function formatBuildImagesResult(
+  result: Awaited<ReturnType<typeof processImageDirectory>>
+): string {
+  return [
+    `Processed ${result.images.length} image(s).`,
+    `generated ${result.generated}`,
+    `cached ${result.cached}`
+  ].join('\n');
+}
+
 function formatError(error: unknown): string {
   if (error instanceof F8ConfigError) {
     return error.message;
@@ -163,6 +186,8 @@ cacheDir = ".f8/cache"
 [image]
 widths = [480, 768, 1024, 1440, 1920, 2560]
 formats = ["avif", "webp", "jpeg"]
+sortBy = "path"
+sortDirection = "asc"
 allowUpscale = false
 linearResize = true
 interpolation = "mks"

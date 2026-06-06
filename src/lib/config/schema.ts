@@ -15,6 +15,8 @@ export const f8ImageConfigSchema = z
       .array(f8ImageFormatSchema)
       .min(1)
       .default([...DEFAULT_IMAGE_FORMATS]),
+    sortBy: z.enum(['path', 'name', 'mtime']).default('path'),
+    sortDirection: z.enum(['asc', 'desc']).default('asc'),
     allowUpscale: z.boolean().default(false),
     linearResize: z.boolean().default(true),
     interpolation: z

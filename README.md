@@ -2,7 +2,7 @@
 
 `f8` is an image-first publishing toolkit for SvelteKit. It will turn folders of images and Markdown into fast, responsive, metadata-rich visual stories.
 
-This repository is currently implementing **Milestone 1 — Foundation** from [`notes/MILESTONES.md`](./notes/MILESTONES.md).
+This repository has completed **Milestone 2 — Image Pipeline** from [`notes/MILESTONES.md`](./notes/MILESTONES.md).
 
 ## Current foundation
 
@@ -12,7 +12,8 @@ This repository is currently implementing **Milestone 1 — Foundation** from [`
 - mise tool configuration
 - Taskfile quality gates
 - TOML configuration loading with schema validation
-- Initial `f8` CLI with `init` and `config` commands
+- `f8` CLI with `init`, `config`, and `build-images` commands
+- Image discovery, sidecar metadata parsing, responsive variant generation, EXIF artifacts, blurhash/dominant color metadata, and cache-aware processing
 - Vitest unit tests
 - ESLint, Prettier, Commitlint, Husky, and CI workflow
 
@@ -61,6 +62,7 @@ Run the source CLI during development:
 pnpm f8 --help
 pnpm f8 init
 pnpm f8 config
+pnpm f8 build-images
 ```
 
 After `pnpm build`, the package binary is emitted at `dist/cli/index.js`.
@@ -73,6 +75,8 @@ After `pnpm build`, the package binary is emitted at `dist/cli/index.js`.
 2. Environment variables
 3. `f8.config.toml`
 4. Defaults
+
+Image pipeline configuration supports widths, formats, sorting, quality, no-upscale behavior, linear resize, and interpolation settings.
 
 Supported environment variables in the current foundation:
 
