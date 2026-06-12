@@ -31,6 +31,7 @@ import type {
 } from '../types.js';
 
 export const PIPELINE_VERSION = '2.0.0';
+export const IMAGE_MANIFEST_FILENAME = 'manifest.json';
 export const SUPPORTED_IMAGE_EXTENSIONS = [
   '.jpg',
   '.jpeg',
@@ -80,6 +81,15 @@ export interface ProcessImageDirectoryResult {
   discovered: string[];
   generated: number;
   cached: number;
+  manifestPath: string;
+}
+
+export interface F8ImageManifest {
+  pipelineVersion: string;
+  generatedAt: string;
+  imageDir: string;
+  cacheDir: string;
+  images: F8ImageMetadata[];
 }
 
 interface OutputPaths {
@@ -298,12 +308,37 @@ export async function processImageDirectory(
     );
   }
 
+  const manifestPath = writeImageManifest({ cwd, config, images });
+
   return {
     images,
     discovered,
     generated: images.filter((imageResult) => !imageResult.cached).length,
-    cached: images.filter((imageResult) => imageResult.cached).length
+    cached: images.filter((imageResult) => imageResult.cached).length,
+    manifestPath
   };
+}
+
+function writeImageManifest(input: {
+  cwd: string;
+  config: F8Config;
+  images: ProcessImageResult[];
+}): string {
+  const manifestPath = join(
+    input.cwd,
+    input.config.cacheDir,
+    IMAGE_MANIFEST_FILENAME
+  );
+  const manifest: F8ImageManifest = {
+    pipelineVersion: PIPELINE_VERSION,
+    generatedAt: new Date().toISOString(),
+    imageDir: input.config.imageDir,
+    cacheDir: input.config.cacheDir,
+    images: input.images.map((image) => image.metadata)
+  };
+
+  writeJson(manifestPath, manifest);
+  return manifestPath;
 }
 
 function normalizedDimensions(metadata: sharp.Metadata): {

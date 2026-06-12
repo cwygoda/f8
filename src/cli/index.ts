@@ -162,7 +162,8 @@ function formatBuildImagesResult(
   return [
     `Processed ${result.images.length} image(s).`,
     `generated ${result.generated}`,
-    `cached ${result.cached}`
+    `cached ${result.cached}`,
+    `manifest ${result.manifestPath}`
   ].join('\n');
 }
 

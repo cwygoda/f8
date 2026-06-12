@@ -165,6 +165,7 @@ Sidecar caption.
     expect(image?.metadata.blurhash).toBeTypeOf('string');
     expect(existsSync(image?.metadataPath ?? '')).toBe(true);
     expect(existsSync(image?.exifPath ?? '')).toBe(true);
+    expect(existsSync(result.manifestPath)).toBe(true);
   });
 
   it('uses cache and invalidates it when config or sidecar metadata changes', async () => {
