@@ -23,8 +23,18 @@ export default tseslint.config(
   {
     files: ['**/*.svelte'],
     languageOptions: {
+      globals: {
+        document: 'readonly',
+        HTMLButtonElement: 'readonly',
+        HTMLDivElement: 'readonly',
+        HTMLElement: 'readonly',
+        KeyboardEvent: 'readonly',
+        MouseEvent: 'readonly',
+        TouchEvent: 'readonly'
+      },
       parserOptions: {
-        extraFileExtensions: ['.svelte']
+        extraFileExtensions: ['.svelte'],
+        parser: tseslint.parser
       }
     }
   }
