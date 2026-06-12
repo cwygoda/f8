@@ -11,6 +11,11 @@ export {
   renderMarkdownToHtml,
   renderResponsiveImage
 } from './markdown/index.js';
+export { f8SvelteKit, loadImageManifest } from './sveltekit/index.js';
+export type {
+  F8SvelteKitIntegration,
+  F8SvelteKitOptions
+} from './sveltekit/index.js';
 export type {
   F8MarkdownBlock,
   F8MarkdownImageBlock,

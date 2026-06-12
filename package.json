@@ -27,13 +27,17 @@
       "types": "./dist/pipeline/index.d.ts",
       "default": "./dist/pipeline/index.js"
     },
-    "./types": {
-      "types": "./dist/types.d.ts",
-      "default": "./dist/types.js"
-    },
     "./markdown": {
       "types": "./dist/markdown/index.d.ts",
       "default": "./dist/markdown/index.js"
+    },
+    "./sveltekit": {
+      "types": "./dist/sveltekit/index.d.ts",
+      "default": "./dist/sveltekit/index.js"
+    },
+    "./types": {
+      "types": "./dist/types.d.ts",
+      "default": "./dist/types.js"
     }
   },
   "files": [
