@@ -2,7 +2,7 @@
 
 `f8` is an image-first publishing toolkit for SvelteKit. It will turn folders of images and Markdown into fast, responsive, metadata-rich visual stories.
 
-This repository has completed **Milestone 2 — Image Pipeline** from [`notes/MILESTONES.md`](./notes/MILESTONES.md).
+This repository has completed **Milestone 3 — Markdown Renderer** from [`notes/MILESTONES.md`](./notes/MILESTONES.md).
 
 ## Current foundation
 
@@ -14,6 +14,7 @@ This repository has completed **Milestone 2 — Image Pipeline** from [`notes/MI
 - TOML configuration loading with schema validation
 - `f8` CLI with `init`, `config`, and `build-images` commands
 - Image discovery, sidecar metadata parsing, responsive variant generation, EXIF artifacts, blurhash/dominant color metadata, and cache-aware processing
+- Markdown renderer utilities that turn isolated images into captioned figures and consecutive image runs into gallery blocks
 - Vitest unit tests
 - ESLint, Prettier, Commitlint, Husky, and CI workflow
 
@@ -86,6 +87,51 @@ Supported environment variables in the current foundation:
 - `F8_CACHE_DIR`
 - `F8_ENABLE_MAP`
 - `F8_ENABLE_EXIF_OVERLAY`
+
+## Markdown rendering
+
+```ts
+import { renderMarkdown } from 'f8/markdown';
+
+const rendered = renderMarkdown(markdown, {
+  images: processedImages.map((result) => result.metadata)
+});
+
+console.log(rendered.html);
+```
+
+The renderer is powered by `remark`/`rehype`. It resolves Markdown image nodes to processed `F8ImageMetadata`, emits semantic captioned figures for isolated images, groups consecutive image lines into gallery blocks, and preserves prose order around image blocks.
+
+## SvelteKit `+page.md` routes
+
+Run the image pipeline first so `.f8/cache/manifest.json` exists:
+
+```bash
+pnpm f8 build-images
+```
+
+Then wire f8 into `svelte.config.js` with mdsvex:
+
+```js
+import adapter from '@sveltejs/adapter-static';
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+import { f8SvelteKit } from 'f8/sveltekit';
+
+const f8 = f8SvelteKit();
+
+/** @type {import('@sveltejs/kit').Config} */
+const config = {
+  extensions: f8.extensions,
+  preprocess: [vitePreprocess(), f8.preprocess],
+  kit: {
+    adapter: adapter()
+  }
+};
+
+export default config;
+```
+
+After that, SvelteKit can route Markdown pages such as `src/routes/+page.md` and `src/routes/travel/+page.md`, with f8 image figures/galleries applied during mdsvex compilation.
 
 ## Commit messages
 

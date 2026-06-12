@@ -72,25 +72,25 @@ This checklist tracks delivery against the project requirements in [`PRD.md`](./
 
 **PRD references:** [§6.5 Markdown Rendering](./PRD.md#65-markdown-rendering), [§6.8 Embeddable Library](./PRD.md#68-embeddable-library), [§9 Data Model](./PRD.md#9-data-model), [§10 Accessibility Requirements](./PRD.md#10-accessibility-requirements)
 
-- [ ] Implement Markdown page rendering pipeline.
-- [ ] Detect Markdown image nodes.
-- [ ] Resolve image nodes to processed `F8ImageMetadata`.
-- [ ] Render isolated images as semantic `figure`/`figcaption` blocks.
-- [ ] Render image title/caption metadata for single images.
-- [ ] Detect consecutive images with no empty lines.
-- [ ] Group consecutive images into gallery blocks.
-- [ ] Preserve natural prose/image ordering.
-- [ ] Expose renderer utilities for embedders.
-- [ ] Add tests for image grouping rules.
-- [ ] Add tests for metadata connection.
+- [x] Implement Markdown page rendering pipeline.
+- [x] Detect Markdown image nodes.
+- [x] Resolve image nodes to processed `F8ImageMetadata`.
+- [x] Render isolated images as semantic `figure`/`figcaption` blocks.
+- [x] Render image title/caption metadata for single images.
+- [x] Detect consecutive images with no empty lines.
+- [x] Group consecutive images into gallery blocks.
+- [x] Preserve natural prose/image ordering.
+- [x] Expose renderer utilities for embedders.
+- [x] Add tests for image grouping rules.
+- [x] Add tests for metadata connection.
 
 **Exit criteria**
 
-- [ ] Single image Markdown renders as a captioned figure.
-- [ ] Consecutive image Markdown renders as one gallery block.
-- [ ] Prose before/between/after images is preserved.
-- [ ] Renderer output is accessible and semantic.
-- [ ] Unit tests cover single-image and grouped-image cases.
+- [x] Single image Markdown renders as a captioned figure.
+- [x] Consecutive image Markdown renders as one gallery block.
+- [x] Prose before/between/after images is preserved.
+- [x] Renderer output is accessible and semantic.
+- [x] Unit tests cover single-image and grouped-image cases.
 
 ---
 
