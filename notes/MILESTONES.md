@@ -98,34 +98,34 @@ This checklist tracks delivery against the project requirements in [`PRD.md`](./
 
 **PRD references:** [§6.7 Image Viewer](./PRD.md#67-image-viewer), [§6.8 Embeddable Library](./PRD.md#68-embeddable-library), [§7 Design Specification](./PRD.md#7-design-specification), [§10 Accessibility Requirements](./PRD.md#10-accessibility-requirements)
 
-- [ ] Build `F8Image` component.
-- [ ] Build `F8Gallery` component.
-- [ ] Build `F8Viewer` component.
-- [ ] Support responsive `srcset`/`sizes` rendering.
-- [ ] Support blurhash or dominant-color placeholders.
-- [ ] Support masonry gallery layout.
-- [ ] Support image captions.
-- [ ] Support viewer open/close interactions.
-- [ ] Support viewer previous/next navigation.
-- [ ] Support keyboard controls.
-- [ ] Support swipe navigation on touch devices.
-- [ ] Implement info overlay toggle.
-- [ ] Display title and description in overlay.
-- [ ] Display EXIF metadata with polished icons.
-- [ ] Lazy-load MapLibre map preview when location exists and maps are enabled.
-- [ ] Implement CSS variable theming.
-- [ ] Implement dark/light theme support.
-- [ ] Respect `prefers-reduced-motion`.
-- [ ] Export Svelte components for external SvelteKit projects.
+- [x] Build `F8Image` component.
+- [x] Build `F8Gallery` component.
+- [x] Build `F8Viewer` component.
+- [x] Support responsive `srcset`/`sizes` rendering.
+- [x] Support blurhash or dominant-color placeholders.
+- [x] Support masonry gallery layout.
+- [x] Support image captions.
+- [x] Support viewer open/close interactions.
+- [x] Support viewer previous/next navigation.
+- [x] Support keyboard controls.
+- [x] Support swipe navigation on touch devices.
+- [x] Implement info overlay toggle.
+- [x] Display title and description in overlay.
+- [x] Display EXIF metadata with polished icons.
+- [x] Lazy-load MapLibre map preview when location exists and maps are enabled.
+- [x] Implement CSS variable theming.
+- [x] Implement dark/light theme support.
+- [x] Respect `prefers-reduced-motion`.
+- [x] Export Svelte components for external SvelteKit projects.
 
 **Exit criteria**
 
-- [ ] Components are SSR-compatible.
-- [ ] Components are keyboard-accessible.
-- [ ] Viewer traps and restores focus correctly.
-- [ ] Map code is not loaded before overlay/map use.
-- [ ] Components can be imported from package exports.
-- [ ] Browser tests cover gallery rendering, viewer navigation, and overlay behavior.
+- [x] Components are SSR-compatible.
+- [x] Components are keyboard-accessible.
+- [x] Viewer traps and restores focus correctly.
+- [x] Map code is not loaded before overlay/map use.
+- [x] Components can be imported from package exports.
+- [x] Browser tests cover gallery rendering, viewer navigation, and overlay behavior.
 
 ---
 

@@ -2,7 +2,7 @@
 
 `f8` is an image-first publishing toolkit for SvelteKit. It will turn folders of images and Markdown into fast, responsive, metadata-rich visual stories.
 
-This repository has completed **Milestone 3 — Markdown Renderer** from [`notes/MILESTONES.md`](./notes/MILESTONES.md).
+This repository has completed **Milestone 4 — UI Components** from [`notes/MILESTONES.md`](./notes/MILESTONES.md).
 
 ## Current foundation
 
@@ -15,7 +15,8 @@ This repository has completed **Milestone 3 — Markdown Renderer** from [`notes
 - `f8` CLI with `init`, `config`, and `build-images` commands
 - Image discovery, sidecar metadata parsing, responsive variant generation, EXIF artifacts, blurhash/dominant color metadata, and cache-aware processing
 - Markdown renderer utilities that turn isolated images into captioned figures and consecutive image runs into gallery blocks
-- Vitest unit tests
+- SSR-compatible Svelte components: `F8Image`, `F8Gallery`, and `F8Viewer`
+- Vitest unit and browser-style component tests
 - ESLint, Prettier, Commitlint, Husky, and CI workflow
 
 ## Requirements
@@ -101,6 +102,20 @@ console.log(rendered.html);
 ```
 
 The renderer is powered by `remark`/`rehype`. It resolves Markdown image nodes to processed `F8ImageMetadata`, emits semantic captioned figures for isolated images, groups consecutive image lines into gallery blocks, and preserves prose order around image blocks.
+
+## Svelte components
+
+```svelte
+<script lang="ts">
+  import { F8Gallery } from 'f8/svelte';
+
+  export let images;
+</script>
+
+<F8Gallery {images} />
+```
+
+Components render responsive `picture` markup from `F8ImageMetadata`, use dominant-color placeholders, support CSS-variable theming, and include an accessible fullscreen viewer with keyboard, swipe, EXIF overlay, and lazy MapLibre preview support.
 
 ## SvelteKit `+page.md` routes
 
