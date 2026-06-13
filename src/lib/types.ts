@@ -26,6 +26,7 @@ export interface F8Location {
 
 export interface F8ImageMetadata {
   id: string;
+  cacheKey?: string;
   sourcePath: string;
   relativePath: string;
   alt?: string;

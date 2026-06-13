@@ -239,6 +239,7 @@ export async function processImage(
 
   const metadata: F8ImageMetadata = {
     id: stableImageId(relativePath),
+    cacheKey,
     sourcePath: absoluteSourcePath,
     relativePath,
     ...(sidecarOverrides.alt !== undefined
@@ -768,7 +769,10 @@ function readCachedResult(
     return undefined;
   }
 
-  const metadata = readJson<F8ImageMetadata>(outputPaths.metadataPath);
+  const metadata = {
+    ...readJson<F8ImageMetadata>(outputPaths.metadataPath),
+    cacheKey
+  };
   if (
     !metadata.variants.every((variant) => variantExists(outputPaths, variant))
   ) {

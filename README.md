@@ -16,7 +16,7 @@ This repository has completed **Milestone 6 — Hardening and Release Readiness*
 - Image discovery, sidecar metadata parsing, responsive variant generation, EXIF artifacts, blurhash/dominant color metadata, and cache-aware processing
 - Markdown renderer utilities that turn isolated images into captioned figures and consecutive image runs into gallery blocks
 - First-party static SvelteKit starter routes for `content/index.md` and nested Markdown slugs
-- SEO frontmatter, canonical URLs, Open Graph, Twitter cards, and `/assets/f8/` static asset wiring
+- SEO frontmatter, canonical URLs, Open Graph, Twitter cards, and `/@f8/` Vite-served image asset wiring
 - SSR-compatible Svelte components: `F8Image`, `F8Gallery`, and `F8Viewer`
 - Vitest unit/browser-style component tests plus Playwright viewport coverage
 - Automated accessibility smoke checks for rendered components
@@ -136,7 +136,7 @@ Components render responsive `picture` markup from `F8ImageMetadata`, use domina
 
 ## Static starter workflow
 
-The first-party starter site reads Markdown from `content/`, pre-renders with `@sveltejs/adapter-static`, and maps generated image variants into `static/assets/f8/` during page loading so the final build serves optimized assets.
+The first-party starter site reads Markdown from `content/`, pre-renders with `@sveltejs/adapter-static`, and serves optimized image variants through the f8 Vite plugin. In dev, `/@f8/` URLs are resolved directly from `.f8/cache`; during production builds, the plugin emits those cached assets into the static output.
 
 ```bash
 pnpm f8 init
@@ -148,6 +148,35 @@ pnpm build
 ```
 
 Frontmatter fields such as `title`, `description`, `canonical`, `image`, `ogImage`, `twitterImage`, and `theme` drive page metadata and presentation. `content/index.md` renders at `/`; nested files such as `content/travel/kyoto.md` render at `/travel/kyoto`.
+
+Images can also be colocated with Markdown content and referenced with Markdown-relative paths. When a page is loaded during dev or prerender, f8 processes supported local image references on demand, caches the responsive variants, and rewrites image metadata URLs to `/@f8/<cache-key>/<cache-path>`:
+
+```txt
+content/travel/kyoto.md
+content/travel/rain.png
+```
+
+```md
+![Rain over Kyoto](./rain.png)
+```
+
+Wire the Vite plugin into `vite.config.ts` so those `/@f8/` URLs resolve in dev and are emitted for static production builds. The plugin also supports explicit image metadata imports with `?f8` for component-level usage; importing an image this way processes it into `.f8/cache` if needed and returns f8 metadata with `/@f8/` variant URLs.
+
+```ts
+import { sveltekit } from '@sveltejs/kit/vite';
+import { defineConfig } from 'vite';
+import { f8Vite } from 'f8/sveltekit';
+
+export default defineConfig({
+  plugins: [f8Vite(), sveltekit()]
+});
+```
+
+```ts
+import hero from './hero.jpg?f8';
+
+console.log(hero.variants[0]?.src); // /@f8/<cache-key>/hero/hero-480.avif
+```
 
 Hardening checks include Vitest accessibility smoke tests, Playwright desktop/mobile viewport coverage (`pnpm test:e2e` after installing browsers with `pnpm test:e2e:install`), and a static build/package quality gate.
 

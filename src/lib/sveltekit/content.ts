@@ -11,11 +11,14 @@ import path, { dirname, extname, join, relative, resolve } from 'node:path';
 import { parse as parseYaml } from 'yaml';
 
 import { loadConfig, type F8Config } from '../config/index.js';
-import { renderMarkdown } from '../markdown/index.js';
+import { listMarkdownImageSources, renderMarkdown } from '../markdown/index.js';
 import {
   IMAGE_MANIFEST_FILENAME,
+  isSupportedImagePath,
+  processImage,
   type F8ImageManifest
 } from '../pipeline/index.js';
+import { DEFAULT_F8_ASSET_BASE, withF8AssetUrls } from './assets.js';
 import type { F8ImageMetadata, F8ImageVariant } from '../types.js';
 
 const FRONTMATTER_BOUNDARY = '---';
@@ -87,6 +90,12 @@ export interface F8StaticSiteOptions {
 export interface F8PageLoadOptions extends F8StaticSiteOptions {
   slug?: string;
   origin?: string;
+  processImages?: boolean;
+}
+
+export interface F8MarkdownImageProcessOptions extends F8StaticSiteOptions {
+  pagePath?: string;
+  markdown?: string;
 }
 
 export function parseMarkdownFrontmatter(
@@ -134,9 +143,9 @@ export function getF8PageEntries(
     .map((entry) => ({ slug: entry.slug }));
 }
 
-export function loadF8Page(
+export async function loadF8Page(
   options: F8PageLoadOptions = {}
-): F8RenderedPage | undefined {
+): Promise<F8RenderedPage | undefined> {
   const { cwd, config } = resolveSiteContext(options);
   const slug = normalizeSlug(options.slug ?? '');
   const entry = listMarkdownPages({ cwd, config }).find(
@@ -149,18 +158,30 @@ export function loadF8Page(
 
   const parsed = parseMarkdownFrontmatter(readFileSync(entry.path, 'utf8'));
   const manifest = loadSiteImageManifest({ cwd, config });
-  const images =
-    options.copyAssets === false
-      ? manifest.images
-      : materializeStaticImageAssets(manifest.images, {
+  const referencedImages =
+    options.processImages === false
+      ? []
+      : await processReferencedMarkdownImages({
           cwd,
           config,
-          ...optionalString('assetBase', options.assetBase),
-          ...optionalString('staticAssetDir', options.staticAssetDir)
+          markdown: parsed.content,
+          pagePath: entry.path
+        });
+  const allImages = mergeImageMetadata(manifest.images, referencedImages);
+  const images =
+    options.copyAssets === false
+      ? allImages
+      : withF8AssetUrls(allImages, {
+          cacheDir: config.cacheDir,
+          assetBase: options.assetBase ?? DEFAULT_F8_ASSET_BASE
         });
   const rendered = renderMarkdown(parsed.content, {
     images,
-    resolveImage: createContentImageResolver(images, config.imageDir),
+    resolveImage: createContentImageResolver(images, {
+      cwd,
+      pagePath: entry.path,
+      imageDir: config.imageDir
+    }),
     imageBasePaths: [
       config.imageDir,
       `/${config.imageDir}`,
@@ -191,6 +212,38 @@ export function loadF8Page(
   };
 }
 
+export async function processF8MarkdownImages(
+  options: F8MarkdownImageProcessOptions = {}
+): Promise<F8ImageMetadata[]> {
+  const { cwd, config } = resolveSiteContext(options);
+
+  if (options.pagePath !== undefined && options.markdown !== undefined) {
+    return processReferencedMarkdownImages({
+      cwd,
+      config,
+      markdown: options.markdown,
+      pagePath: options.pagePath
+    });
+  }
+
+  const processed = new Map<string, F8ImageMetadata>();
+  for (const entry of listMarkdownPages({ cwd, config })) {
+    const parsed = parseMarkdownFrontmatter(readFileSync(entry.path, 'utf8'));
+    const images = await processReferencedMarkdownImages({
+      cwd,
+      config,
+      markdown: parsed.content,
+      pagePath: entry.path
+    });
+
+    for (const image of images) {
+      processed.set(image.sourcePath, image);
+    }
+  }
+
+  return [...processed.values()];
+}
+
 export function materializeStaticImageAssets(
   images: F8ImageMetadata[],
   options: F8StaticSiteOptions = {}
@@ -211,11 +264,8 @@ export function materializeStaticImageAssets(
         staticAssetRoot
       })
     );
-    const fallback = largestVariant({ ...image, variants });
-
     return {
       ...image,
-      sourcePath: fallback?.src ?? image.relativePath,
       variants
     };
   });
@@ -382,14 +432,88 @@ function pageEntryFromPath(contentRoot: string, filePath: string): F8PageEntry {
   };
 }
 
+async function processReferencedMarkdownImages(input: {
+  cwd: string;
+  config: F8Config;
+  markdown: string;
+  pagePath: string;
+}): Promise<F8ImageMetadata[]> {
+  const contentRoot = resolve(input.cwd, input.config.contentDir);
+  const configuredImageRoot = resolve(input.cwd, input.config.imageDir);
+  const processed = new Map<string, F8ImageMetadata>();
+
+  for (const src of listMarkdownImageSources(input.markdown)) {
+    const sourcePath = resolveLocalMarkdownImagePath(src, {
+      cwd: input.cwd,
+      pagePath: input.pagePath
+    });
+
+    if (
+      sourcePath === undefined ||
+      processed.has(sourcePath) ||
+      !existsSync(sourcePath) ||
+      !isSupportedImagePath(sourcePath)
+    ) {
+      continue;
+    }
+
+    const imageRoot = isInsidePath(sourcePath, contentRoot)
+      ? contentRoot
+      : isInsidePath(sourcePath, configuredImageRoot)
+        ? configuredImageRoot
+        : undefined;
+
+    if (imageRoot === undefined) {
+      continue;
+    }
+
+    const result = await processImage(sourcePath, {
+      cwd: input.cwd,
+      config: input.config,
+      imageRoot
+    });
+    processed.set(sourcePath, result.metadata);
+  }
+
+  return [...processed.values()];
+}
+
+function mergeImageMetadata(
+  manifestImages: F8ImageMetadata[],
+  referencedImages: F8ImageMetadata[]
+): F8ImageMetadata[] {
+  const images = new Map<string, F8ImageMetadata>();
+
+  for (const image of manifestImages) {
+    images.set(image.sourcePath, image);
+  }
+
+  for (const image of referencedImages) {
+    images.set(image.sourcePath, image);
+  }
+
+  return [...images.values()];
+}
+
 function createContentImageResolver(
   images: F8ImageMetadata[],
-  imageDir: string
+  options: { cwd: string; pagePath: string; imageDir: string }
 ): (src: string) => F8ImageMetadata | undefined {
   const index = new Map(images.map((image) => [image.relativePath, image]));
-  const imageDirMarker = `${normalizeSlug(imageDir)}/`;
+  const sourceIndex = new Map(
+    images.map((image) => [resolve(options.cwd, image.sourcePath), image])
+  );
+  const imageDirMarker = `${normalizeSlug(options.imageDir)}/`;
 
   return (src) => {
+    const sourcePath = resolveLocalMarkdownImagePath(src, options);
+    const sourceMatch =
+      sourcePath === undefined ? undefined : sourceIndex.get(sourcePath);
+
+    if (sourceMatch !== undefined) {
+      return sourceMatch;
+    }
+
     const normalized = normalizeSlug(src.split('#')[0]?.split('?')[0] ?? src);
     const markerIndex = normalized.lastIndexOf(imageDirMarker);
 
@@ -449,6 +573,48 @@ function relativeVariantAssetPath(
   }
 
   return normalizedSrc.slice(normalizedCacheDir.length + 1);
+}
+
+function resolveLocalMarkdownImagePath(
+  src: string,
+  options: { cwd: string; pagePath: string }
+): string | undefined {
+  if (isRemoteOrSpecialUrl(src)) {
+    return undefined;
+  }
+
+  const withoutHash = src.split('#')[0] ?? src;
+  const withoutQuery = withoutHash.split('?')[0] ?? withoutHash;
+  const decoded = decodeUriPath(withoutQuery);
+
+  if (decoded.length === 0) {
+    return undefined;
+  }
+
+  return decoded.startsWith('/')
+    ? resolve(options.cwd, decoded.slice(1))
+    : resolve(dirname(options.pagePath), decoded);
+}
+
+function isRemoteOrSpecialUrl(src: string): boolean {
+  return /^(?:[a-z][a-z0-9+.-]*:|#)/i.test(src);
+}
+
+function decodeUriPath(src: string): string {
+  try {
+    return decodeURI(src);
+  } catch {
+    return src;
+  }
+}
+
+function isInsidePath(childPath: string, parentPath: string): boolean {
+  const relativePath = relative(parentPath, childPath);
+
+  return (
+    relativePath.length === 0 ||
+    (!relativePath.startsWith('..') && !path.isAbsolute(relativePath))
+  );
 }
 
 function normalizeAssetBase(assetBase: string): string {

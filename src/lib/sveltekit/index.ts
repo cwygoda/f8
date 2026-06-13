@@ -22,12 +22,30 @@ export {
   loadF8Page,
   materializeStaticImageAssets,
   parseMarkdownFrontmatter,
+  processF8MarkdownImages,
+  type F8MarkdownImageProcessOptions,
   type F8PageEntry,
   type F8PageFrontmatter,
   type F8PageSeo,
   type F8RenderedPage,
   type F8StaticSiteOptions
 } from './content.js';
+export {
+  DEFAULT_F8_ASSET_BASE,
+  f8AssetUrl,
+  listCachedF8Assets,
+  normalizeF8AssetBase,
+  serveF8CachedAsset,
+  withF8AssetUrls,
+  type F8AssetUrlOptions,
+  type F8CachedAsset
+} from './assets.js';
+export {
+  f8SvelteKitVite,
+  f8Vite,
+  processAllF8MarkdownImages,
+  type F8VitePluginOptions
+} from './vite.js';
 
 export interface F8SvelteKitOptions {
   cwd?: string;

@@ -146,6 +146,14 @@ export function createImageResolver(
   };
 }
 
+export function listMarkdownImageSources(markdown: string): string[] {
+  const tree = unified().use(remarkParse).parse(markdown) as MdastRoot;
+  const sources = new Set<string>();
+  collectMarkdownImageSources(tree, sources);
+
+  return [...sources];
+}
+
 export function createImageMetadataIndex(
   images: F8MarkdownRenderOptions['images'],
   options: { imageBasePaths?: string[] } = {}
@@ -684,6 +692,21 @@ function safeSrcSet(value: unknown): string | undefined {
     .filter((entry): entry is string => entry !== undefined);
 
   return entries.length > 0 ? entries.join(', ') : undefined;
+}
+
+function collectMarkdownImageSources(
+  node: MdastRoot | MdastContent,
+  sources: Set<string>
+): void {
+  if (node.type === 'image') {
+    sources.add(node.url);
+  }
+
+  if ('children' in node && Array.isArray(node.children)) {
+    for (const child of node.children) {
+      collectMarkdownImageSources(child, sources);
+    }
+  }
 }
 
 function isParagraph(node: MdastContent): node is MdastParagraph {

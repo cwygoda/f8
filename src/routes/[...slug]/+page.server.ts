@@ -9,8 +9,11 @@ export const entries: EntryGenerator = () => [
   ...getF8PageEntries()
 ];
 
-export const load: PageServerLoad = ({ params, url }) => {
-  const page = loadF8Page({ slug: params.slug ?? '', origin: url.origin });
+export const load: PageServerLoad = async ({ params, url }) => {
+  const page = await loadF8Page({
+    slug: params.slug ?? '',
+    origin: url.origin
+  });
 
   if (page === undefined) {
     error(404, 'Page not found');
