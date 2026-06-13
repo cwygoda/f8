@@ -11,6 +11,7 @@ export type {
   F8Config,
   F8GalleryConfig,
   F8ImageConfig,
+  F8SiteConfig,
   F8ViewerConfig
 } from './schema.js';
 
@@ -84,6 +85,14 @@ function configFromEnv(env: NodeJS.ProcessEnv): DeepPartial<F8Config> {
   assignString(config, 'imageDir', env.F8_IMAGE_DIR);
   assignString(config, 'outputDir', env.F8_OUTPUT_DIR);
   assignString(config, 'cacheDir', env.F8_CACHE_DIR);
+
+  if (env.F8_SITE_TITLE !== undefined && env.F8_SITE_TITLE.length > 0) {
+    config.site = { ...(config.site ?? {}), title: env.F8_SITE_TITLE };
+  }
+
+  if (env.F8_SITE_URL !== undefined && env.F8_SITE_URL.length > 0) {
+    config.site = { ...(config.site ?? {}), url: env.F8_SITE_URL };
+  }
 
   const enableMap = parseBooleanEnv('F8_ENABLE_MAP', env.F8_ENABLE_MAP);
   if (enableMap !== undefined) {

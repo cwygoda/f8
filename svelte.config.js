@@ -6,7 +6,10 @@ const config = {
   kit: {
     adapter: adapter({
       fallback: undefined
-    })
+    }),
+    prerender: {
+      handleUnseenRoutes: 'ignore'
+    }
   },
   preprocess: vitePreprocess()
 };

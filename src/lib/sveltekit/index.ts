@@ -15,6 +15,20 @@ import {
 } from '../pipeline/index.js';
 import type { F8ImageMetadata } from '../types.js';
 
+export {
+  createPageSeo,
+  getF8PageEntries,
+  listMarkdownPages,
+  loadF8Page,
+  materializeStaticImageAssets,
+  parseMarkdownFrontmatter,
+  type F8PageEntry,
+  type F8PageFrontmatter,
+  type F8PageSeo,
+  type F8RenderedPage,
+  type F8StaticSiteOptions
+} from './content.js';
+
 export interface F8SvelteKitOptions {
   cwd?: string;
   manifestPath?: string;

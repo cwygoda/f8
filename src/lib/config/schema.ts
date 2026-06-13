@@ -48,12 +48,25 @@ export const f8ViewerConfigSchema = z
   })
   .prefault({});
 
+export const f8SiteConfigSchema = z
+  .object({
+    title: z.string().min(1).default('f8'),
+    description: z
+      .string()
+      .min(1)
+      .default('Image-first publishing for SvelteKit.'),
+    url: z.string().url().optional(),
+    lang: z.string().min(1).default('en')
+  })
+  .prefault({});
+
 export const f8ConfigSchema = z
   .object({
     contentDir: z.string().min(1).default('content'),
     imageDir: z.string().min(1).default('images'),
     outputDir: z.string().min(1).default('.f8'),
     cacheDir: z.string().min(1).default('.f8/cache'),
+    site: f8SiteConfigSchema,
     image: f8ImageConfigSchema,
     gallery: f8GalleryConfigSchema,
     viewer: f8ViewerConfigSchema
@@ -64,3 +77,4 @@ export type F8Config = z.infer<typeof f8ConfigSchema>;
 export type F8ImageConfig = z.infer<typeof f8ImageConfigSchema>;
 export type F8GalleryConfig = z.infer<typeof f8GalleryConfigSchema>;
 export type F8ViewerConfig = z.infer<typeof f8ViewerConfigSchema>;
+export type F8SiteConfig = z.infer<typeof f8SiteConfigSchema>;

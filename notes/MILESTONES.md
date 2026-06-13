@@ -133,30 +133,30 @@ This checklist tracks delivery against the project requirements in [`PRD.md`](./
 
 **PRD references:** [§6.6 SvelteKit Static Site](./PRD.md#66-sveltekit-static-site), [§7 Design Specification](./PRD.md#7-design-specification), [§11 Performance Requirements](./PRD.md#11-performance-requirements), [§12 SEO and Metadata](./PRD.md#12-seo-and-metadata), [§21 Example End-to-End Workflow](./PRD.md#21-example-end-to-end-workflow)
 
-- [ ] Build first-party starter site.
-- [ ] Implement home/index page route.
-- [ ] Implement Markdown slug routes.
-- [ ] Wire generated image assets into static output.
-- [ ] Support SvelteKit static adapter.
-- [ ] Add page frontmatter title/description support.
-- [ ] Add Open Graph metadata support.
-- [ ] Add Twitter card metadata support.
-- [ ] Add canonical URL support.
-- [ ] Implement responsive editorial page layout.
-- [ ] Allow image blocks to break wider than prose.
-- [ ] Implement polished default design.
-- [ ] Implement first-class dark mode.
-- [ ] Add `f8 index <image-dir> [output-md]` workflow to starter docs.
-- [ ] Verify example end-to-end workflow.
+- [x] Build first-party starter site.
+- [x] Implement home/index page route.
+- [x] Implement Markdown slug routes.
+- [x] Wire generated image assets into static output.
+- [x] Support SvelteKit static adapter.
+- [x] Add page frontmatter title/description support.
+- [x] Add Open Graph metadata support.
+- [x] Add Twitter card metadata support.
+- [x] Add canonical URL support.
+- [x] Implement responsive editorial page layout.
+- [x] Allow image blocks to break wider than prose.
+- [x] Implement polished default design.
+- [x] Implement first-class dark mode.
+- [x] Add `f8 index <image-dir> [output-md]` workflow to starter docs.
+- [x] Verify example end-to-end workflow.
 
 **Exit criteria**
 
-- [ ] A clean starter can be initialized and run.
-- [ ] A directory of images can be indexed into Markdown.
-- [ ] The static site renders processed images from Markdown.
-- [ ] Static build passes.
-- [ ] Demo Lighthouse targets are met or documented with known exceptions.
-- [ ] Default design looks production-ready without customization.
+- [x] A clean starter can be initialized and run.
+- [x] A directory of images can be indexed into Markdown.
+- [x] The static site renders processed images from Markdown.
+- [x] Static build passes.
+- [x] Demo Lighthouse targets are met or documented with known exceptions.
+- [x] Default design looks production-ready without customization.
 
 ---
 

@@ -1,11 +1,16 @@
 import { randomUUID } from 'node:crypto';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { f8SvelteKit, loadImageManifest } from '../src/lib/sveltekit/index.js';
+import {
+  f8SvelteKit,
+  getF8PageEntries,
+  loadF8Page,
+  loadImageManifest
+} from '../src/lib/sveltekit/index.js';
 import type { F8ImageManifest } from '../src/lib/pipeline/index.js';
 import type { F8ImageMetadata } from '../src/lib/types.js';
 
@@ -63,6 +68,68 @@ describe('f8 SvelteKit integration', () => {
     expect(manifest.images[0]?.relativePath).toBe('a.jpg');
     expect(loadImageManifest({ manifestPath }).images[0]?.title).toBe(
       'Title for a.jpg'
+    );
+  });
+
+  it('loads Markdown pages with SEO metadata and static f8 asset URLs', () => {
+    const cwd = fixtureDir();
+    const image = imageMetadata('trip/a.jpg');
+    writeManifest(cwd, [image]);
+    mkdirSync(join(cwd, '.f8', 'cache', 'trip'), { recursive: true });
+    writeFileSync(
+      join(cwd, '.f8', 'cache', 'trip', 'a-960.webp'),
+      'image-bytes',
+      'utf8'
+    );
+    mkdirSync(join(cwd, 'content', 'travel'), { recursive: true });
+    writeFileSync(
+      join(cwd, 'content', 'index.md'),
+      `---
+title: Kyoto in Rain
+description: A quiet walk.
+---
+
+# Kyoto in Rain
+
+![](../images/trip/a.jpg)
+`,
+      'utf8'
+    );
+    writeFileSync(
+      join(cwd, 'content', 'travel', 'kyoto.md'),
+      `---
+title: Nested Kyoto
+---
+
+![](../../images/trip/a.jpg)
+`,
+      'utf8'
+    );
+    writeFileSync(
+      join(cwd, 'f8.config.toml'),
+      `contentDir = "content"
+imageDir = "images"
+cacheDir = ".f8/cache"
+
+[site]
+title = "Photo Journal"
+url = "https://example.com"
+`,
+      'utf8'
+    );
+
+    const page = loadF8Page({ cwd, slug: '' });
+
+    expect(page?.seo.title).toBe('Kyoto in Rain');
+    expect(page?.seo.canonical).toBe('https://example.com/');
+    expect(page?.html).toContain('data-f8-block="figure"');
+    expect(page?.html).toContain('/assets/f8/trip/a-960.webp');
+    expect(
+      existsSync(join(cwd, 'static', 'assets', 'f8', 'trip', 'a-960.webp'))
+    ).toBe(true);
+    expect(getF8PageEntries({ cwd })).toEqual([{ slug: 'travel/kyoto' }]);
+    expect(loadF8Page({ cwd, slug: 'travel/kyoto' })?.html).toContain(
+      '/assets/f8/trip/a-960.webp'
     );
   });
 
