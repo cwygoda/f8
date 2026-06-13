@@ -1,5 +1,8 @@
 packages:
   - .
+overrides:
+  cookie: 0.7.2
+  esbuild: ^0.28.1
 allowBuilds:
   '@go-task/cli': true
   esbuild: true

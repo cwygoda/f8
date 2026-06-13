@@ -17,7 +17,7 @@ import path, {
 } from 'node:path';
 
 import { encode as encodeBlurhash } from 'blurhash';
-import { parse as parseExif } from 'exifr';
+import exifr from 'exifr';
 import sharp from 'sharp';
 import { parse as parseYaml } from 'yaml';
 
@@ -221,8 +221,12 @@ export async function processImage(
   const exifFromSource = normalizeExif(exifRecord);
   const locationFromSource = normalizeLocation(exifRecord);
   const sidecarOverrides = sidecarToOverrides(sidecar);
-  const exif = mergeExif(exifFromSource, sidecarOverrides.exif);
-  const location = mergeLocation(locationFromSource, sidecarOverrides.location);
+  const exif = config.privacy.includeExifMetadata
+    ? mergeExif(exifFromSource, sidecarOverrides.exif)
+    : {};
+  const location = config.privacy.includeGpsMetadata
+    ? mergeLocation(locationFromSource, sidecarOverrides.location)
+    : {};
   const variants = await generateVariants({
     sourcePath: absoluteSourcePath,
     width,
@@ -498,7 +502,7 @@ async function parseExifRecord(
   sourcePath: string
 ): Promise<Record<string, unknown>> {
   try {
-    const parsed = (await parseExif(sourcePath)) as unknown;
+    const parsed = (await exifr.parse(sourcePath)) as unknown;
 
     return asRecord(parsed);
   } catch {
@@ -614,6 +618,10 @@ async function buildVariant(input: {
 
   if (input.config.image.linearResize) {
     transformer = transformer.gamma();
+  }
+
+  if (!input.config.privacy.stripOutputMetadata) {
+    transformer = transformer.withMetadata();
   }
 
   transformer = applyFormat(

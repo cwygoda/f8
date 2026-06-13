@@ -21,6 +21,13 @@ export default tseslint.config(
   prettier,
   ...svelte.configs['flat/prettier'],
   {
+    rules: {
+      complexity: ['warn', { max: 22 }],
+      'max-depth': ['warn', 4],
+      'max-params': ['warn', 5]
+    }
+  },
+  {
     files: ['**/*.svelte'],
     languageOptions: {
       globals: {

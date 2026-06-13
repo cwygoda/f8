@@ -164,29 +164,29 @@ This checklist tracks delivery against the project requirements in [`PRD.md`](./
 
 **PRD references:** [§10 Accessibility Requirements](./PRD.md#10-accessibility-requirements), [§11 Performance Requirements](./PRD.md#11-performance-requirements), [§13 Security and Privacy](./PRD.md#13-security-and-privacy), [§15 Quality Gates](./PRD.md#15-quality-gates), [§16 Testing Strategy](./PRD.md#16-testing-strategy), [§18 Acceptance Criteria for v1](./PRD.md#18-acceptance-criteria-for-v1)
 
-- [ ] Add full Playwright test suite.
-- [ ] Add automated accessibility checks.
-- [ ] Improve keyboard and screen-reader behavior.
-- [ ] Tune image loading and lazy-loading behavior.
-- [ ] Prevent accidental serving of original full-size images.
-- [ ] Add privacy controls for GPS metadata.
-- [ ] Add EXIF strip/hide controls.
-- [ ] Sanitize Markdown/HTML output.
-- [ ] Validate CLI inputs.
-- [ ] Validate config files.
-- [ ] Ensure indexing never overwrites user prose silently.
-- [ ] Add complexity checks.
-- [ ] Add release automation from Conventional Commits.
-- [ ] Add changelog generation.
-- [ ] Finish package export definitions.
-- [ ] Finish public documentation.
-- [ ] Prepare release packaging.
+- [x] Add full Playwright test suite.
+- [x] Add automated accessibility checks.
+- [x] Improve keyboard and screen-reader behavior.
+- [x] Tune image loading and lazy-loading behavior.
+- [x] Prevent accidental serving of original full-size images.
+- [x] Add privacy controls for GPS metadata.
+- [x] Add EXIF strip/hide controls.
+- [x] Sanitize Markdown/HTML output.
+- [x] Validate CLI inputs.
+- [x] Validate config files.
+- [x] Ensure indexing never overwrites user prose silently.
+- [x] Add complexity checks.
+- [x] Add release automation from Conventional Commits.
+- [x] Add changelog generation.
+- [x] Finish package export definitions.
+- [x] Finish public documentation.
+- [x] Prepare release packaging.
 
 **Exit criteria**
 
-- [ ] All v1 acceptance criteria in [PRD §18](./PRD.md#18-acceptance-criteria-for-v1) are satisfied.
-- [ ] `task check` passes consistently.
-- [ ] Browser tests pass across required viewports.
-- [ ] Accessibility checks pass or have explicit documented exceptions.
-- [ ] Release automation can produce a version bump and changelog from Conventional Commits.
-- [ ] Package can be consumed by a separate fixture SvelteKit app.
+- [x] All v1 acceptance criteria in [PRD §18](./PRD.md#18-acceptance-criteria-for-v1) are satisfied.
+- [x] `task check` passes consistently.
+- [x] Browser tests pass across required viewports.
+- [x] Accessibility checks pass or have explicit documented exceptions.
+- [x] Release automation can produce a version bump and changelog from Conventional Commits.
+- [x] Package can be consumed by a separate fixture SvelteKit app.

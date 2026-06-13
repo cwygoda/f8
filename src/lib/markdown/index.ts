@@ -8,7 +8,8 @@ import type {
   Element as HastElement,
   ElementContent as HastElementContent,
   Properties as HastProperties,
-  Root as HastRoot
+  Root as HastRoot,
+  RootContent as HastRootContent
 } from 'hast';
 import type {
   Content as MdastContent,
@@ -49,6 +50,8 @@ export interface F8MarkdownRenderOptions {
   resolveImage?: (src: string) => F8ImageMetadata | undefined;
   imageBasePaths?: string[];
   imageSizes?: string;
+  allowUnprocessedImages?: boolean;
+  sanitize?: boolean;
 }
 
 export interface F8MarkdownRenderResult {
@@ -69,6 +72,7 @@ export function renderMarkdown(
     .use(remarkParse)
     .use(f8RemarkImages, options)
     .use(remarkRehype)
+    .use(options.sanitize === false ? identityRehypePlugin : f8RehypeSanitize)
     .use(rehypeStringify)
     .processSync(markdown);
 
@@ -216,6 +220,12 @@ export const f8RemarkImages: Plugin<[F8MarkdownRenderOptions?], MdastRoot> =
     transformImageParagraphs(tree, resolver, options);
   };
 
+export const f8RehypeSanitize: Plugin<[], HastRoot> = () => (tree) => {
+  sanitizeChildren(tree.children);
+};
+
+const identityRehypePlugin: Plugin<[], HastRoot> = () => () => undefined;
+
 function transformImageParagraphs(
   parent: MdastParent,
   resolveImage: (src: string) => F8ImageMetadata | undefined,
@@ -355,7 +365,11 @@ function imageLinkElement(
   image: F8MarkdownImageNode,
   options: F8MarkdownRenderOptions
 ): HastElement {
-  const href = largestVariant(image.metadata)?.src ?? image.src;
+  if (image.metadata === undefined && options.allowUnprocessedImages !== true) {
+    return responsiveImageElement(image, options);
+  }
+
+  const href = safeUrl(largestVariant(image.metadata)?.src ?? image.src) ?? '#';
   const label = imageLabel(image);
   const ariaLabel = label.length > 0 ? `Open image: ${label}` : 'Open image';
 
@@ -380,8 +394,20 @@ function responsiveImageElement(
   const alt = imageAlt(image);
 
   if (metadata === undefined || metadata.variants.length === 0) {
+    if (options.allowUnprocessedImages !== true) {
+      return element(
+        'span',
+        {
+          className: ['f8-image', 'f8-image--unprocessed'],
+          role: 'img',
+          ariaLabel: alt.length > 0 ? alt : 'Image unavailable'
+        },
+        [text(alt.length > 0 ? alt : 'Image unavailable')]
+      );
+    }
+
     return element('img', {
-      src: image.src,
+      src: safeUrl(image.src) ?? '',
       alt,
       loading: 'lazy',
       decoding: 'async'
@@ -550,6 +576,114 @@ function text(value: string): HastElementContent {
 function stringifyHast(children: HastElementContent[]): string {
   const tree: HastRoot = { type: 'root', children };
   return unified().use(rehypeStringify).stringify(tree);
+}
+
+function sanitizeChildren(children: HastRootContent[]): void {
+  for (let index = children.length - 1; index >= 0; index -= 1) {
+    const child = children[index];
+
+    if (child?.type !== 'element') {
+      continue;
+    }
+
+    if (isUnsafeElement(child.tagName)) {
+      children.splice(index, 1);
+      continue;
+    }
+
+    sanitizeElement(child);
+    sanitizeChildren(child.children as HastRootContent[]);
+  }
+}
+
+function sanitizeElement(node: HastElement): void {
+  const properties: HastProperties = {};
+
+  for (const [key, value] of Object.entries(node.properties ?? {})) {
+    if (/^on/i.test(key)) {
+      continue;
+    }
+
+    if (isUrlProperty(key)) {
+      const sanitized =
+        key.toLowerCase() === 'srcset' ? safeSrcSet(value) : safeUrl(value);
+      if (sanitized !== undefined) {
+        properties[key] = sanitized;
+      }
+      continue;
+    }
+
+    if (key === 'style' && typeof value !== 'string') {
+      continue;
+    }
+
+    properties[key] = value;
+  }
+
+  node.properties = properties;
+}
+
+function isUnsafeElement(tagName: string): boolean {
+  return new Set([
+    'script',
+    'style',
+    'iframe',
+    'object',
+    'embed',
+    'link',
+    'meta'
+  ]).has(tagName.toLowerCase());
+}
+
+function isUrlProperty(key: string): boolean {
+  return new Set([
+    'href',
+    'src',
+    'srcset',
+    'srcSet',
+    'poster',
+    'xlinkHref'
+  ]).has(key);
+}
+
+function safeUrl(value: unknown): string | undefined {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const trimmed = value.trim();
+  if (trimmed.length === 0) {
+    return undefined;
+  }
+
+  if (/^(#|\/|\.\/|\.\.\/)/.test(trimmed)) {
+    return trimmed;
+  }
+
+  if (!/^[a-z][a-z\d+.-]*:/i.test(trimmed)) {
+    return trimmed;
+  }
+
+  return /^(https?:|mailto:)/i.test(trimmed) ? trimmed : undefined;
+}
+
+function safeSrcSet(value: unknown): string | undefined {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const entries = value
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter((entry) => entry.length > 0)
+    .map((entry) => {
+      const [url, ...descriptors] = entry.split(/\s+/);
+      const safe = safeUrl(url);
+      return safe === undefined ? undefined : [safe, ...descriptors].join(' ');
+    })
+    .filter((entry): entry is string => entry !== undefined);
+
+  return entries.length > 0 ? entries.join(', ') : undefined;
 }
 
 function isParagraph(node: MdastContent): node is MdastParagraph {

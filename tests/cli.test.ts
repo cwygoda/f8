@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -87,6 +87,48 @@ describe('f8 CLI', () => {
     );
     expect(readFileSync(outputPath, 'utf8')).toContain(
       '![](../images/indexed-photo.jpg)'
+    );
+  });
+
+  it('backs up existing Markdown before updating the generated index block', async () => {
+    const cwd = fixtureDir();
+    initProject({ cwd, force: false });
+    await sharp({
+      create: {
+        width: 16,
+        height: 8,
+        channels: 3,
+        background: '#552244'
+      }
+    })
+      .jpeg()
+      .toFile(join(cwd, 'images', 'backup.jpg'));
+    const outputPath = join(cwd, 'content', 'index.md');
+    writeFileSync(
+      outputPath,
+      `# My prose\n\n<!-- f8:index:start -->\n![](old.jpg)\n<!-- f8:index:end -->\n`,
+      'utf8'
+    );
+
+    const result = indexImages({ cwd, imageDir: 'images' });
+
+    expect(result.backupPath).toBe(`${outputPath}.bak`);
+    expect(readFileSync(`${outputPath}.bak`, 'utf8')).toContain('old.jpg');
+    expect(readFileSync(outputPath, 'utf8')).toContain('# My prose');
+    expect(readFileSync(outputPath, 'utf8')).toContain('backup.jpg');
+  });
+
+  it('refuses to update Markdown with incomplete generated index markers', () => {
+    const cwd = fixtureDir();
+    initProject({ cwd, force: false });
+    writeFileSync(
+      join(cwd, 'content', 'index.md'),
+      `# Broken\n\n<!-- f8:index:start -->\n`,
+      'utf8'
+    );
+
+    expect(() => indexImages({ cwd, imageDir: 'images' })).toThrow(
+      'markers are incomplete'
     );
   });
 

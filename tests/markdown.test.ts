@@ -168,6 +168,28 @@ By evening, the streets turned gold.
     expect(result.html).not.toContain('data-f8-block="gallery"');
   });
 
+  it('sanitizes unsafe links and blocks unprocessed image sources by default', () => {
+    const result = renderMarkdown(
+      `[bad](javascript:alert(1))
+
+![Private](./images/private.jpg)`
+    );
+
+    expect(result.html).not.toContain('javascript:');
+    expect(result.html).not.toContain('src="./images/private.jpg"');
+    expect(result.html).toContain('role="img"');
+    expect(result.html).toContain('Private');
+  });
+
+  it('can explicitly allow unprocessed image output for trusted renderers', () => {
+    const result = renderMarkdown('![Trusted](./images/trusted.jpg)', {
+      allowUnprocessedImages: true
+    });
+
+    expect(result.html).toContain('src="./images/trusted.jpg"');
+    expect(result.html).toContain('alt="Trusted"');
+  });
+
   it('uses real Markdown parsing instead of transforming image syntax inside code', () => {
     const result = renderMarkdown(
       `Inline \`![](./images/a.jpg)\` stays code.

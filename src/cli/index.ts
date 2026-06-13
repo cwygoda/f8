@@ -1,6 +1,13 @@
 #!/usr/bin/env node
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join, relative, resolve } from 'node:path';
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  statSync,
+  writeFileSync
+} from 'node:fs';
+import { dirname, extname, join, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import { F8ConfigError, loadConfig } from '../lib/config/index.js';
@@ -27,6 +34,7 @@ Options:
   -h, --help    Show this help message
   --force       Overwrite files when used with init or build-images
   --dry-run     Print generated Markdown when used with index
+  --no-backup   Do not create a .bak file before changing an existing index
 `;
 
 export interface CliIO {
@@ -49,6 +57,7 @@ export interface IndexImagesResult {
   images: string[];
   markdown: string;
   written: boolean;
+  backupPath?: string;
 }
 
 const INDEX_START = '<!-- f8:index:start -->';
@@ -105,7 +114,8 @@ export async function main(
         config,
         ...optionalCliArg('imageDir', positionalArgs[0]),
         ...optionalCliArg('outputPath', positionalArgs[1]),
-        dryRun: args.includes('--dry-run')
+        dryRun: args.includes('--dry-run'),
+        backup: !args.includes('--no-backup')
       });
       stdout(formatIndexImagesResult(result));
       return 0;
@@ -155,13 +165,15 @@ export function indexImages({
   config,
   imageDir,
   outputPath,
-  dryRun = false
+  dryRun = false,
+  backup = true
 }: {
   cwd: string;
   config?: F8Config;
   imageDir?: string;
   outputPath?: string;
   dryRun?: boolean;
+  backup?: boolean;
 }): IndexImagesResult {
   const resolvedConfig = config ?? loadConfig({ cwd }).config;
   const requestedImageDir = imageDir ?? resolvedConfig.imageDir;
@@ -169,21 +181,32 @@ export function indexImages({
     outputPath ?? join(resolvedConfig.contentDir, 'index.md');
   const absoluteImageDir = resolve(cwd, requestedImageDir);
   const absoluteOutputPath = resolve(cwd, requestedOutputPath);
+  validateIndexInputs({
+    cwd,
+    absoluteImageDir,
+    absoluteOutputPath
+  });
   const images = discoverImages({
     rootDir: absoluteImageDir,
     sortBy: resolvedConfig.image.sortBy,
     sortDirection: resolvedConfig.image.sortDirection
   });
   const block = renderIndexBlock(images, absoluteOutputPath);
-  const markdown = mergeIndexBlock(
-    existsSync(absoluteOutputPath)
-      ? readFileSync(absoluteOutputPath, 'utf8')
-      : starterMarkdown,
-    block
-  );
+  const existingMarkdown = existsSync(absoluteOutputPath)
+    ? readFileSync(absoluteOutputPath, 'utf8')
+    : starterMarkdown;
+  const markdown = mergeIndexBlock(existingMarkdown, block);
+  let backupPath: string | undefined;
 
   if (!dryRun) {
     mkdirSync(dirname(absoluteOutputPath), { recursive: true });
+    if (
+      backup &&
+      existsSync(absoluteOutputPath) &&
+      existingMarkdown !== markdown
+    ) {
+      backupPath = createBackupFile(absoluteOutputPath);
+    }
     writeFileSync(absoluteOutputPath, markdown, 'utf8');
   }
 
@@ -192,7 +215,8 @@ export function indexImages({
     outputPath: absoluteOutputPath,
     images,
     markdown,
-    written: !dryRun
+    written: !dryRun,
+    ...(backupPath === undefined ? {} : { backupPath })
   };
 }
 
@@ -250,8 +274,47 @@ function formatIndexImagesResult(result: IndexImagesResult): string {
     `${result.written ? 'Indexed' : 'Generated'} ${result.images.length} image(s).`,
     `imageDir ${result.imageDir}`,
     `markdown ${result.outputPath}`,
+    ...(result.backupPath === undefined ? [] : [`backup ${result.backupPath}`]),
     ...(result.written ? [] : ['', result.markdown])
   ].join('\n');
+}
+
+function validateIndexInputs(input: {
+  cwd: string;
+  absoluteImageDir: string;
+  absoluteOutputPath: string;
+}): void {
+  if (!existsSync(input.absoluteImageDir)) {
+    throw new Error(
+      `Image directory does not exist: ${input.absoluteImageDir}`
+    );
+  }
+
+  if (!statSync(input.absoluteImageDir).isDirectory()) {
+    throw new Error(`Image path is not a directory: ${input.absoluteImageDir}`);
+  }
+
+  const outputExtension = extname(input.absoluteOutputPath).toLowerCase();
+  if (!['.md', '.markdown'].includes(outputExtension)) {
+    throw new Error('Index output path must end with .md or .markdown.');
+  }
+
+  const relativeOutput = relative(input.cwd, input.absoluteOutputPath);
+  const relativeImageDir = relative(input.cwd, input.absoluteImageDir);
+  if (
+    relativeOutput === relativeImageDir ||
+    relativeOutput.startsWith(`${relativeImageDir}/`)
+  ) {
+    throw new Error(
+      'Index output must not be written inside the image directory.'
+    );
+  }
+}
+
+function createBackupFile(path: string): string {
+  const backupPath = `${path}.bak`;
+  copyFileSync(path, backupPath);
+  return backupPath;
 }
 
 function renderIndexBlock(images: string[], outputPath: string): string {
@@ -276,6 +339,12 @@ function mergeIndexBlock(markdown: string, block: string): string {
     return (
       [before, block, after].filter((part) => part.length > 0).join('\n\n') +
       '\n'
+    );
+  }
+
+  if (start !== -1 || end !== -1) {
+    throw new Error(
+      'Refusing to update index because f8 index markers are incomplete or out of order.'
     );
   }
 
@@ -337,6 +406,15 @@ maxColumns = 4
 [viewer]
 enableMap = true
 enableExifOverlay = true
+
+[privacy]
+includeGpsMetadata = false
+includeExifMetadata = true
+stripOutputMetadata = true
+
+[security]
+allowUnprocessedImages = false
+sanitizeMarkdown = true
 `;
 
 export const starterMarkdown = `---

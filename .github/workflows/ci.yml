@@ -19,5 +19,10 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
+      - run: pnpm check
       - run: pnpm test
       - run: pnpm build
+      - run: pnpm consumer:check
+      - run: pnpm release:dry-run
+      - run: pnpm exec playwright install --with-deps chromium webkit
+      - run: pnpm test:e2e

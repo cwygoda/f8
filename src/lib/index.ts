@@ -2,6 +2,7 @@ export { loadConfig, f8ConfigSchema } from './config/index.js';
 export {
   createImageMetadataIndex,
   createImageResolver,
+  f8RehypeSanitize,
   f8RemarkImages,
   parseMarkdownBlocks,
   renderFigure,
@@ -29,6 +30,8 @@ export type {
   F8Config,
   F8GalleryConfig,
   F8ImageConfig,
+  F8PrivacyConfig,
+  F8SecurityConfig,
   F8ViewerConfig
 } from './config/index.js';
 export type {

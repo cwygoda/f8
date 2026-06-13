@@ -15,6 +15,7 @@
   export let sizes = DEFAULT_IMAGE_SIZES;
   export let loading: 'lazy' | 'eager' = 'lazy';
   export let decoding: 'async' | 'auto' | 'sync' = 'async';
+  export let fetchpriority: 'high' | 'low' | 'auto' = 'auto';
   export let caption = false;
   export let interactive = false;
   export let label: string | undefined = undefined;
@@ -56,6 +57,7 @@
             src={fallback?.src ?? image.sourcePath}
             {loading}
             {decoding}
+            {fetchpriority}
             alt={altText}
             width={image.width}
             height={image.height}
@@ -73,6 +75,7 @@
         src={fallback?.src ?? image.sourcePath}
         {loading}
         {decoding}
+        {fetchpriority}
         alt={altText}
         width={image.width}
         height={image.height}

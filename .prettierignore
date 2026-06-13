@@ -2,6 +2,8 @@
 build
 dist
 node_modules
+playwright-report
+test-results
 pnpm-lock.yaml
 .f8
 notes/PRD.md

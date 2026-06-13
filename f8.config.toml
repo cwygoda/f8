@@ -25,3 +25,12 @@ maxColumns = 4
 [viewer]
 enableMap = true
 enableExifOverlay = true
+
+[privacy]
+includeGpsMetadata = false
+includeExifMetadata = true
+stripOutputMetadata = true
+
+[security]
+allowUnprocessedImages = false
+sanitizeMarkdown = true

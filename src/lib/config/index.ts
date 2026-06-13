@@ -11,6 +11,8 @@ export type {
   F8Config,
   F8GalleryConfig,
   F8ImageConfig,
+  F8PrivacyConfig,
+  F8SecurityConfig,
   F8SiteConfig,
   F8ViewerConfig
 } from './schema.js';
@@ -105,6 +107,38 @@ function configFromEnv(env: NodeJS.ProcessEnv): DeepPartial<F8Config> {
   );
   if (enableExifOverlay !== undefined) {
     config.viewer = { ...(config.viewer ?? {}), enableExifOverlay };
+  }
+
+  const includeGpsMetadata = parseBooleanEnv(
+    'F8_INCLUDE_GPS_METADATA',
+    env.F8_INCLUDE_GPS_METADATA
+  );
+  if (includeGpsMetadata !== undefined) {
+    config.privacy = { ...(config.privacy ?? {}), includeGpsMetadata };
+  }
+
+  const includeExifMetadata = parseBooleanEnv(
+    'F8_INCLUDE_EXIF_METADATA',
+    env.F8_INCLUDE_EXIF_METADATA
+  );
+  if (includeExifMetadata !== undefined) {
+    config.privacy = { ...(config.privacy ?? {}), includeExifMetadata };
+  }
+
+  const stripOutputMetadata = parseBooleanEnv(
+    'F8_STRIP_OUTPUT_METADATA',
+    env.F8_STRIP_OUTPUT_METADATA
+  );
+  if (stripOutputMetadata !== undefined) {
+    config.privacy = { ...(config.privacy ?? {}), stripOutputMetadata };
+  }
+
+  const allowUnprocessedImages = parseBooleanEnv(
+    'F8_ALLOW_UNPROCESSED_IMAGES',
+    env.F8_ALLOW_UNPROCESSED_IMAGES
+  );
+  if (allowUnprocessedImages !== undefined) {
+    config.security = { ...(config.security ?? {}), allowUnprocessedImages };
   }
 
   return config;

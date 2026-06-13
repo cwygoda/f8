@@ -48,6 +48,21 @@ export const f8ViewerConfigSchema = z
   })
   .prefault({});
 
+export const f8PrivacyConfigSchema = z
+  .object({
+    includeGpsMetadata: z.boolean().default(false),
+    includeExifMetadata: z.boolean().default(true),
+    stripOutputMetadata: z.boolean().default(true)
+  })
+  .prefault({});
+
+export const f8SecurityConfigSchema = z
+  .object({
+    allowUnprocessedImages: z.boolean().default(false),
+    sanitizeMarkdown: z.boolean().default(true)
+  })
+  .prefault({});
+
 export const f8SiteConfigSchema = z
   .object({
     title: z.string().min(1).default('f8'),
@@ -69,12 +84,40 @@ export const f8ConfigSchema = z
     site: f8SiteConfigSchema,
     image: f8ImageConfigSchema,
     gallery: f8GalleryConfigSchema,
-    viewer: f8ViewerConfigSchema
+    viewer: f8ViewerConfigSchema,
+    privacy: f8PrivacyConfigSchema,
+    security: f8SecurityConfigSchema
   })
-  .strict();
+  .strict()
+  .superRefine((config, context) => {
+    for (const [key, value] of Object.entries({
+      contentDir: config.contentDir,
+      imageDir: config.imageDir,
+      outputDir: config.outputDir,
+      cacheDir: config.cacheDir
+    })) {
+      if (value.includes('\0')) {
+        context.addIssue({
+          code: 'custom',
+          path: [key],
+          message: 'must not contain null bytes'
+        });
+      }
+    }
+
+    if (new Set(config.image.widths).size !== config.image.widths.length) {
+      context.addIssue({
+        code: 'custom',
+        path: ['image', 'widths'],
+        message: 'must not contain duplicate widths'
+      });
+    }
+  });
 
 export type F8Config = z.infer<typeof f8ConfigSchema>;
 export type F8ImageConfig = z.infer<typeof f8ImageConfigSchema>;
 export type F8GalleryConfig = z.infer<typeof f8GalleryConfigSchema>;
 export type F8ViewerConfig = z.infer<typeof f8ViewerConfigSchema>;
+export type F8PrivacyConfig = z.infer<typeof f8PrivacyConfigSchema>;
+export type F8SecurityConfig = z.infer<typeof f8SecurityConfigSchema>;
 export type F8SiteConfig = z.infer<typeof f8SiteConfigSchema>;

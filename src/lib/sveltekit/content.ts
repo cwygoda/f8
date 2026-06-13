@@ -165,7 +165,9 @@ export function loadF8Page(
       config.imageDir,
       `/${config.imageDir}`,
       `../${config.imageDir}`
-    ]
+    ],
+    allowUnprocessedImages: config.security.allowUnprocessedImages,
+    sanitize: config.security.sanitizeMarkdown
   });
   const pageImages = rendered.images
     .map((image) => image.metadata)
@@ -200,17 +202,23 @@ export function materializeStaticImageAssets(
     options.staticAssetDir ?? DEFAULT_STATIC_ASSET_DIR
   );
 
-  return images.map((image) => ({
-    ...image,
-    variants: image.variants.map((variant) =>
+  return images.map((image) => {
+    const variants = image.variants.map((variant) =>
       materializeVariant(variant, {
         cwd,
         cacheDir: config.cacheDir,
         assetBase,
         staticAssetRoot
       })
-    )
-  }));
+    );
+    const fallback = largestVariant({ ...image, variants });
+
+    return {
+      ...image,
+      sourcePath: fallback?.src ?? image.relativePath,
+      variants
+    };
+  });
 }
 
 export function createPageSeo(input: {

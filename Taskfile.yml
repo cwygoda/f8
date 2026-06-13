@@ -14,9 +14,14 @@ tasks:
       - pnpm lint
 
   test:
-    desc: Run unit tests
+    desc: Run unit and browser tests
     cmds:
       - pnpm test
+
+  test:e2e:
+    desc: Run Playwright tests across required viewports
+    cmds:
+      - pnpm test:e2e
 
   build:
     desc: Build the SvelteKit app and package artifacts
@@ -24,12 +29,14 @@ tasks:
       - pnpm build
 
   check:
-    desc: Run the Milestone 1 quality gate
+    desc: Run the release-readiness quality gate
     cmds:
       - pnpm lint
       - pnpm check
       - pnpm test
       - pnpm build
+      - pnpm consumer:check
+      - pnpm release:dry-run
 
   quality:
     desc: Alias for the complete quality gate

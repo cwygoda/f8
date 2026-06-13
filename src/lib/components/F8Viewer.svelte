@@ -45,6 +45,10 @@
   $: safeIndex = normalizeIndex(index, images.length);
   $: current = images[safeIndex];
   $: captionContent = current === undefined ? {} : imageCaption(current);
+  $: titleId =
+    current === undefined ? undefined : `f8-viewer-title-${current.id}`;
+  $: captionId =
+    current === undefined ? undefined : `f8-viewer-caption-${current.id}`;
   $: fallback = current === undefined ? undefined : fallbackVariant(current);
   $: sources = current === undefined ? [] : sourceSets(current.variants);
   $: canNavigate = images.length > 1;
@@ -295,13 +299,21 @@
     class="f8-viewer"
     role="dialog"
     aria-modal="true"
-    aria-label={current.title ?? current.alt ?? 'Image viewer'}
+    aria-labelledby={titleId}
+    aria-describedby={captionId}
     tabindex="-1"
     on:click={handleBackdropClick}
     on:keydown={handleKeydown}
     on:touchstart={handleTouchStart}
     on:touchend={handleTouchEnd}
   >
+    <h2 id={titleId} class="f8-viewer__sr-only">
+      {current.title ?? current.alt ?? 'Image viewer'}
+    </h2>
+    <p class="f8-viewer__sr-only" aria-live="polite">
+      Image {safeIndex + 1} of {images.length}
+    </p>
+
     <div class="f8-viewer__chrome" aria-label="Viewer controls">
       <button
         class="f8-viewer__button"
@@ -355,7 +367,7 @@
         />
       </picture>
       {#if captionContent.title || captionContent.description}
-        <figcaption class="f8-viewer__caption">
+        <figcaption id={captionId} class="f8-viewer__caption">
           {#if captionContent.title}<strong>{captionContent.title}</strong>{/if}
           {#if captionContent.description}<span
               >{captionContent.description}</span
@@ -450,6 +462,18 @@
 
   .f8-viewer:focus {
     outline: none;
+  }
+
+  .f8-viewer__sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   .f8-viewer__chrome,

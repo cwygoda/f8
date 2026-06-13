@@ -168,6 +168,48 @@ Sidecar caption.
     expect(existsSync(result.manifestPath)).toBe(true);
   });
 
+  it('omits GPS metadata by default and includes it only when configured', async () => {
+    const cwd = fixtureDir();
+    await writeImage(join(cwd, 'images', 'geo.jpg'));
+    writeFileSync(
+      join(cwd, 'images', 'geo.md'),
+      `---
+location:
+  label: Private place
+  lat: 1.23
+  lng: 4.56
+---
+`,
+      'utf8'
+    );
+
+    const privateResult = await processImageDirectory({
+      cwd,
+      config: testConfig()
+    });
+    const publicResult = await processImageDirectory({
+      cwd,
+      force: true,
+      config: f8ConfigSchema.parse({
+        imageDir: 'images',
+        cacheDir: '.f8/cache',
+        image: {
+          widths: [32],
+          formats: ['webp'],
+          allowUpscale: false
+        },
+        privacy: { includeGpsMetadata: true }
+      })
+    });
+
+    expect(privateResult.images[0]?.metadata.location).toBeUndefined();
+    expect(publicResult.images[0]?.metadata.location).toMatchObject({
+      label: 'Private place',
+      lat: 1.23,
+      lng: 4.56
+    });
+  });
+
   it('uses cache and invalidates it when config or sidecar metadata changes', async () => {
     const cwd = fixtureDir();
     await writeImage(join(cwd, 'images', 'photo.jpg'), {

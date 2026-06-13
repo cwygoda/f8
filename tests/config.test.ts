@@ -22,6 +22,9 @@ describe('loadConfig', () => {
     expect(result.config.contentDir).toBe('content');
     expect(result.config.image.widths).toContain(1024);
     expect(result.config.viewer.enableMap).toBe(true);
+    expect(result.config.privacy.includeGpsMetadata).toBe(false);
+    expect(result.config.privacy.stripOutputMetadata).toBe(true);
+    expect(result.config.security.sanitizeMarkdown).toBe(true);
   });
 
   it('loads f8.config.toml and applies env overrides', () => {
@@ -42,7 +45,9 @@ enableMap = true
       cwd,
       env: {
         F8_IMAGE_DIR: 'env-images',
-        F8_ENABLE_MAP: 'false'
+        F8_ENABLE_MAP: 'false',
+        F8_INCLUDE_GPS_METADATA: 'true',
+        F8_ALLOW_UNPROCESSED_IMAGES: 'true'
       }
     });
 
@@ -50,6 +55,8 @@ enableMap = true
     expect(result.config.contentDir).toBe('stories');
     expect(result.config.imageDir).toBe('env-images');
     expect(result.config.viewer.enableMap).toBe(false);
+    expect(result.config.privacy.includeGpsMetadata).toBe(true);
+    expect(result.config.security.allowUnprocessedImages).toBe(true);
   });
 
   it('throws a useful error for invalid config', () => {

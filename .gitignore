@@ -4,6 +4,8 @@ node_modules
 build
 dist
 coverage
+playwright-report
+test-results
 .f8
 .cache
 .env
