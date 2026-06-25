@@ -230,11 +230,8 @@
     }
 
     try {
-      const importer = new Function(
-        'specifier',
-        'return import(specifier)'
-      ) as (specifier: string) => Promise<MapLibreModule>;
-      const maplibre = await importer('maplibre-gl');
+      const maplibre =
+        (await import('maplibre-gl')) as unknown as MapLibreModule;
       const style = {
         version: 8,
         sources: {},

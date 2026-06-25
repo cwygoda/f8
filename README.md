@@ -109,7 +109,7 @@ Supported environment variables in the current foundation:
 ## Markdown rendering
 
 ```ts
-import { renderMarkdown } from 'f8/markdown';
+import { renderMarkdown } from '@cwygoda/f8/markdown';
 
 const rendered = renderMarkdown(markdown, {
   images: processedImages.map((result) => result.metadata)
@@ -124,7 +124,7 @@ The renderer is powered by `remark`/`rehype`. It resolves Markdown image nodes t
 
 ```svelte
 <script lang="ts">
-  import { F8Gallery } from 'f8/svelte';
+  import { F8Gallery } from '@cwygoda/f8/svelte';
 
   export let images;
 </script>
@@ -132,7 +132,9 @@ The renderer is powered by `remark`/`rehype`. It resolves Markdown image nodes t
 <F8Gallery {images} />
 ```
 
-Components render responsive `picture` markup from `F8ImageMetadata`, use dominant-color placeholders, support CSS-variable theming, and include an accessible fullscreen viewer with keyboard, swipe, EXIF overlay, and lazy MapLibre preview support. Public exports include `f8/svelte`, `f8/components/F8Image.svelte`, `f8/components/F8Gallery.svelte`, `f8/components/F8Viewer.svelte`, and `f8/components/image-utils`.
+Components render responsive `picture` markup from `F8ImageMetadata`, use dominant-color placeholders, support CSS-variable theming, and include an accessible fullscreen viewer with keyboard, swipe, EXIF overlay, and lazy MapLibre preview support. Public exports include `@cwygoda/f8/svelte`, `@cwygoda/f8/components/F8Image.svelte`, `@cwygoda/f8/components/F8Gallery.svelte`, `@cwygoda/f8/components/F8Viewer.svelte`, and `@cwygoda/f8/components/image-utils`.
+
+Map previews use the optional peer dependency `maplibre-gl`. Install it in consuming apps that enable map previews; without it, the viewer gracefully reports the map preview as unavailable.
 
 ## Static starter workflow
 
@@ -165,7 +167,7 @@ Wire the Vite plugin into `vite.config.ts` so those `/@f8/` URLs resolve in dev 
 ```ts
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
-import { f8Vite } from 'f8/sveltekit';
+import { f8Vite } from '@cwygoda/f8/sveltekit';
 
 export default defineConfig({
   plugins: [f8Vite(), sveltekit()]
@@ -193,7 +195,7 @@ Then wire f8 into `svelte.config.js` with mdsvex:
 ```js
 import adapter from '@sveltejs/adapter-static';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
-import { f8SvelteKit } from 'f8/sveltekit';
+import { f8SvelteKit } from '@cwygoda/f8/sveltekit';
 
 const f8 = f8SvelteKit();
 
