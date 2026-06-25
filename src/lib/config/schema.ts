@@ -15,8 +15,6 @@ export const f8ImageConfigSchema = z
       .array(f8ImageFormatSchema)
       .min(1)
       .default([...DEFAULT_IMAGE_FORMATS]),
-    sortBy: z.enum(['path', 'name', 'mtime']).default('path'),
-    sortDirection: z.enum(['asc', 'desc']).default('asc'),
     allowUpscale: z.boolean().default(false),
     linearResize: z.boolean().default(true),
     interpolation: z
@@ -78,7 +76,6 @@ export const f8SiteConfigSchema = z
 export const f8ConfigSchema = z
   .object({
     contentDir: z.string().min(1).default('content'),
-    imageDir: z.string().min(1).default('images'),
     outputDir: z.string().min(1).default('.f8'),
     cacheDir: z.string().min(1).default('.f8/cache'),
     site: f8SiteConfigSchema,
@@ -92,7 +89,6 @@ export const f8ConfigSchema = z
   .superRefine((config, context) => {
     for (const [key, value] of Object.entries({
       contentDir: config.contentDir,
-      imageDir: config.imageDir,
       outputDir: config.outputDir,
       cacheDir: config.cacheDir
     })) {

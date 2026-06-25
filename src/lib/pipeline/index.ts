@@ -2,7 +2,6 @@ import { createHash } from 'node:crypto';
 import {
   existsSync,
   mkdirSync,
-  readdirSync,
   readFileSync,
   statSync,
   writeFileSync
@@ -31,7 +30,6 @@ import type {
 } from '../types.js';
 
 export const PIPELINE_VERSION = '2.0.0';
-export const IMAGE_MANIFEST_FILENAME = 'manifest.json';
 export const SUPPORTED_IMAGE_EXTENSIONS = [
   '.jpg',
   '.jpeg',
@@ -43,12 +41,6 @@ export const SUPPORTED_IMAGE_EXTENSIONS = [
 ] as const;
 
 const FRONTMATTER_BOUNDARY = '---';
-
-export interface ImageDiscoveryOptions {
-  rootDir: string;
-  sortBy?: F8Config['image']['sortBy'];
-  sortDirection?: F8Config['image']['sortDirection'];
-}
 
 export interface ParsedSidecar {
   path: string;
@@ -70,26 +62,6 @@ export interface ProcessImageResult {
   cached: boolean;
   metadataPath: string;
   exifPath: string;
-}
-
-export interface ProcessImageDirectoryOptions extends ProcessImageOptions {
-  imageDir?: string;
-}
-
-export interface ProcessImageDirectoryResult {
-  images: ProcessImageResult[];
-  discovered: string[];
-  generated: number;
-  cached: number;
-  manifestPath: string;
-}
-
-export interface F8ImageManifest {
-  pipelineVersion: string;
-  generatedAt: string;
-  imageDir: string;
-  cacheDir: string;
-  images: F8ImageMetadata[];
 }
 
 interface OutputPaths {
@@ -115,19 +87,6 @@ interface SharpRawImage {
     height: number;
     channels: number;
   };
-}
-
-export function discoverImages(options: ImageDiscoveryOptions): string[] {
-  if (!existsSync(options.rootDir)) {
-    return [];
-  }
-
-  const images = walkImages(resolve(options.rootDir));
-  return sortDiscoveredImages(
-    images,
-    options.sortBy ?? 'path',
-    options.sortDirection ?? 'asc'
-  );
 }
 
 export function isSupportedImagePath(filePath: string): boolean {
@@ -184,8 +143,11 @@ export async function processImage(
 ): Promise<ProcessImageResult> {
   const cwd = resolve(options.cwd ?? process.cwd());
   const config = options.config ?? f8ConfigSchema.parse({});
-  const imageRoot = resolve(cwd, options.imageRoot ?? config.imageDir);
   const absoluteSourcePath = resolve(cwd, sourcePath);
+  const imageRoot = resolve(
+    cwd,
+    options.imageRoot ?? dirname(absoluteSourcePath)
+  );
   const nativeRelativePath = relative(imageRoot, absoluteSourcePath);
 
   if (isOutsidePath(nativeRelativePath)) {
@@ -289,63 +251,6 @@ export async function processImage(
   };
 }
 
-export async function processImageDirectory(
-  options: ProcessImageDirectoryOptions = {}
-): Promise<ProcessImageDirectoryResult> {
-  const cwd = resolve(options.cwd ?? process.cwd());
-  const config = options.config ?? f8ConfigSchema.parse({});
-  const imageRoot = resolve(cwd, options.imageDir ?? config.imageDir);
-  const discovered = discoverImages({
-    rootDir: imageRoot,
-    sortBy: config.image.sortBy,
-    sortDirection: config.image.sortDirection
-  });
-  const images: ProcessImageResult[] = [];
-
-  for (const imagePath of discovered) {
-    images.push(
-      await processImage(imagePath, {
-        cwd,
-        config,
-        imageRoot,
-        ...(options.force !== undefined ? { force: options.force } : {})
-      })
-    );
-  }
-
-  const manifestPath = writeImageManifest({ cwd, config, images });
-
-  return {
-    images,
-    discovered,
-    generated: images.filter((imageResult) => !imageResult.cached).length,
-    cached: images.filter((imageResult) => imageResult.cached).length,
-    manifestPath
-  };
-}
-
-function writeImageManifest(input: {
-  cwd: string;
-  config: F8Config;
-  images: ProcessImageResult[];
-}): string {
-  const manifestPath = join(
-    input.cwd,
-    input.config.cacheDir,
-    IMAGE_MANIFEST_FILENAME
-  );
-  const manifest: F8ImageManifest = {
-    pipelineVersion: PIPELINE_VERSION,
-    generatedAt: new Date().toISOString(),
-    imageDir: input.config.imageDir,
-    cacheDir: input.config.cacheDir,
-    images: input.images.map((image) => image.metadata)
-  };
-
-  writeJson(manifestPath, manifest);
-  return manifestPath;
-}
-
 function normalizedDimensions(metadata: sharp.Metadata): {
   width: number;
   height: number;
@@ -365,43 +270,6 @@ function normalizedDimensions(metadata: sharp.Metadata): {
   }
 
   return { width, height };
-}
-
-function walkImages(rootDir: string): string[] {
-  const entries = readdirSync(rootDir, { withFileTypes: true });
-  const images: string[] = [];
-
-  for (const entry of entries) {
-    const entryPath = join(rootDir, entry.name);
-    if (entry.isDirectory()) {
-      images.push(...walkImages(entryPath));
-    } else if (entry.isFile() && isSupportedImagePath(entry.name)) {
-      images.push(entryPath);
-    }
-  }
-
-  return images;
-}
-
-function sortDiscoveredImages(
-  images: string[],
-  sortBy: F8Config['image']['sortBy'],
-  sortDirection: F8Config['image']['sortDirection']
-): string[] {
-  const direction = sortDirection === 'desc' ? -1 : 1;
-  const sorted = [...images].sort((left, right) => {
-    if (sortBy === 'mtime') {
-      return (statSync(left).mtimeMs - statSync(right).mtimeMs) * direction;
-    }
-
-    if (sortBy === 'name') {
-      return basename(left).localeCompare(basename(right)) * direction;
-    }
-
-    return toPosixPath(left).localeCompare(toPosixPath(right)) * direction;
-  });
-
-  return sorted;
 }
 
 function parseMarkdownFrontmatter(raw: string): {

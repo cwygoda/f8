@@ -1,12 +1,11 @@
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import sharp from 'sharp';
 import { describe, expect, it } from 'vitest';
 
-import { indexImages, initProject, main } from '../src/cli/index.js';
+import { initProject, main } from '../src/cli/index.js';
 
 function fixtureDir(): string {
   return join(tmpdir(), `f8-cli-${randomUUID()}`);
@@ -23,6 +22,7 @@ describe('f8 CLI', () => {
 
     expect(exitCode).toBe(0);
     expect(messages.join('\n')).toContain('Usage:');
+    expect(messages.join('\n')).not.toContain('index <image-dir>');
   });
 
   it('initializes starter files', () => {
@@ -33,12 +33,11 @@ describe('f8 CLI', () => {
     expect(result.created).toEqual(
       expect.arrayContaining([
         join(cwd, 'content'),
-        join(cwd, 'images'),
-        join(cwd, '.f8', 'cache'),
         join(cwd, 'f8.config.toml'),
         join(cwd, 'content', 'index.md')
       ])
     );
+    expect(result.created).not.toContain(join(cwd, 'images'));
     expect(existsSync(join(cwd, 'f8.config.toml'))).toBe(true);
     expect(readFileSync(join(cwd, 'content', 'index.md'), 'utf8')).toContain(
       'Welcome to f8'
@@ -57,106 +56,5 @@ describe('f8 CLI', () => {
         join(cwd, 'content', 'index.md')
       ])
     );
-  });
-
-  it('indexes a directory of images into Markdown while preserving prose', async () => {
-    const cwd = fixtureDir();
-    initProject({ cwd, force: false });
-    await sharp({
-      create: {
-        width: 16,
-        height: 8,
-        channels: 3,
-        background: '#442266'
-      }
-    })
-      .jpeg()
-      .toFile(join(cwd, 'images', 'indexed-photo.jpg'));
-    const outputPath = join(cwd, 'content', 'story.md');
-
-    const result = indexImages({
-      cwd,
-      imageDir: 'images',
-      outputPath: 'content/story.md'
-    });
-
-    expect(result.images).toHaveLength(1);
-    expect(readFileSync(outputPath, 'utf8')).toContain('Welcome to f8');
-    expect(readFileSync(outputPath, 'utf8')).toContain(
-      '<!-- f8:index:start -->'
-    );
-    expect(readFileSync(outputPath, 'utf8')).toContain(
-      '![](../images/indexed-photo.jpg)'
-    );
-  });
-
-  it('backs up existing Markdown before updating the generated index block', async () => {
-    const cwd = fixtureDir();
-    initProject({ cwd, force: false });
-    await sharp({
-      create: {
-        width: 16,
-        height: 8,
-        channels: 3,
-        background: '#552244'
-      }
-    })
-      .jpeg()
-      .toFile(join(cwd, 'images', 'backup.jpg'));
-    const outputPath = join(cwd, 'content', 'index.md');
-    writeFileSync(
-      outputPath,
-      `# My prose\n\n<!-- f8:index:start -->\n![](old.jpg)\n<!-- f8:index:end -->\n`,
-      'utf8'
-    );
-
-    const result = indexImages({ cwd, imageDir: 'images' });
-
-    expect(result.backupPath).toBe(`${outputPath}.bak`);
-    expect(readFileSync(`${outputPath}.bak`, 'utf8')).toContain('old.jpg');
-    expect(readFileSync(outputPath, 'utf8')).toContain('# My prose');
-    expect(readFileSync(outputPath, 'utf8')).toContain('backup.jpg');
-  });
-
-  it('refuses to update Markdown with incomplete generated index markers', () => {
-    const cwd = fixtureDir();
-    initProject({ cwd, force: false });
-    writeFileSync(
-      join(cwd, 'content', 'index.md'),
-      `# Broken\n\n<!-- f8:index:start -->\n`,
-      'utf8'
-    );
-
-    expect(() => indexImages({ cwd, imageDir: 'images' })).toThrow(
-      'markers are incomplete'
-    );
-  });
-
-  it('prints index Markdown in dry-run mode', async () => {
-    const cwd = fixtureDir();
-    initProject({ cwd, force: false });
-    await sharp({
-      create: {
-        width: 16,
-        height: 8,
-        channels: 3,
-        background: '#225544'
-      }
-    })
-      .jpeg()
-      .toFile(join(cwd, 'images', 'dry-run.jpg'));
-    const messages: string[] = [];
-
-    const exitCode = await main(
-      ['index', 'images', 'content/index.md', '--dry-run'],
-      {
-        cwd,
-        stdout: (message) => messages.push(message)
-      }
-    );
-
-    expect(exitCode).toBe(0);
-    expect(messages.join('\n')).toContain('Generated 1 image(s).');
-    expect(messages.join('\n')).toContain('![](../images/dry-run.jpg)');
   });
 });

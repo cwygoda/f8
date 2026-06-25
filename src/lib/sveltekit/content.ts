@@ -12,12 +12,7 @@ import { parse as parseYaml } from 'yaml';
 
 import { loadConfig, type F8Config } from '../config/index.js';
 import { listMarkdownImageSources, renderMarkdown } from '../markdown/index.js';
-import {
-  IMAGE_MANIFEST_FILENAME,
-  isSupportedImagePath,
-  processImage,
-  type F8ImageManifest
-} from '../pipeline/index.js';
+import { isSupportedImagePath, processImage } from '../pipeline/index.js';
 import { DEFAULT_F8_ASSET_BASE, withF8AssetUrls } from './assets.js';
 import type { F8ImageMetadata, F8ImageVariant } from '../types.js';
 
@@ -157,7 +152,6 @@ export async function loadF8Page(
   }
 
   const parsed = parseMarkdownFrontmatter(readFileSync(entry.path, 'utf8'));
-  const manifest = loadSiteImageManifest({ cwd, config });
   const referencedImages =
     options.processImages === false
       ? []
@@ -167,11 +161,10 @@ export async function loadF8Page(
           markdown: parsed.content,
           pagePath: entry.path
         });
-  const allImages = mergeImageMetadata(manifest.images, referencedImages);
   const images =
     options.copyAssets === false
-      ? allImages
-      : withF8AssetUrls(allImages, {
+      ? referencedImages
+      : withF8AssetUrls(referencedImages, {
           cacheDir: config.cacheDir,
           assetBase: options.assetBase ?? DEFAULT_F8_ASSET_BASE
         });
@@ -179,14 +172,8 @@ export async function loadF8Page(
     images,
     resolveImage: createContentImageResolver(images, {
       cwd,
-      pagePath: entry.path,
-      imageDir: config.imageDir
+      pagePath: entry.path
     }),
-    imageBasePaths: [
-      config.imageDir,
-      `/${config.imageDir}`,
-      `../${config.imageDir}`
-    ],
     allowUnprocessedImages: config.security.allowUnprocessedImages,
     sanitize: config.security.sanitizeMarkdown
   });
@@ -340,53 +327,6 @@ function resolveSiteContext(options: F8StaticSiteOptions): {
   return { cwd, config: options.config ?? loadConfig({ cwd }).config };
 }
 
-function loadSiteImageManifest(input: {
-  cwd: string;
-  config: F8Config;
-}): F8ImageManifest {
-  const manifestPath = join(
-    input.cwd,
-    input.config.cacheDir,
-    IMAGE_MANIFEST_FILENAME
-  );
-
-  if (!existsSync(manifestPath)) {
-    return {
-      pipelineVersion: 'unknown',
-      generatedAt: new Date(0).toISOString(),
-      imageDir: input.config.imageDir,
-      cacheDir: input.config.cacheDir,
-      images: []
-    };
-  }
-
-  const parsed = JSON.parse(readFileSync(manifestPath, 'utf8')) as unknown;
-
-  if (!isRecord(parsed) || !Array.isArray(parsed.images)) {
-    throw new Error(`Invalid f8 image manifest: ${manifestPath}`);
-  }
-
-  return {
-    pipelineVersion:
-      typeof parsed.pipelineVersion === 'string'
-        ? parsed.pipelineVersion
-        : 'unknown',
-    generatedAt:
-      typeof parsed.generatedAt === 'string'
-        ? parsed.generatedAt
-        : new Date(0).toISOString(),
-    imageDir:
-      typeof parsed.imageDir === 'string'
-        ? parsed.imageDir
-        : input.config.imageDir,
-    cacheDir:
-      typeof parsed.cacheDir === 'string'
-        ? parsed.cacheDir
-        : input.config.cacheDir,
-    images: parsed.images as F8ImageMetadata[]
-  };
-}
-
 function normalizeFrontmatter(
   value: Record<string, unknown>
 ): F8PageFrontmatter {
@@ -439,7 +379,6 @@ async function processReferencedMarkdownImages(input: {
   pagePath: string;
 }): Promise<F8ImageMetadata[]> {
   const contentRoot = resolve(input.cwd, input.config.contentDir);
-  const configuredImageRoot = resolve(input.cwd, input.config.imageDir);
   const processed = new Map<string, F8ImageMetadata>();
 
   for (const src of listMarkdownImageSources(input.markdown)) {
@@ -457,20 +396,14 @@ async function processReferencedMarkdownImages(input: {
       continue;
     }
 
-    const imageRoot = isInsidePath(sourcePath, contentRoot)
-      ? contentRoot
-      : isInsidePath(sourcePath, configuredImageRoot)
-        ? configuredImageRoot
-        : undefined;
-
-    if (imageRoot === undefined) {
+    if (!isInsidePath(sourcePath, contentRoot)) {
       continue;
     }
 
     const result = await processImage(sourcePath, {
       cwd: input.cwd,
       config: input.config,
-      imageRoot
+      imageRoot: contentRoot
     });
     processed.set(sourcePath, result.metadata);
   }
@@ -478,50 +411,17 @@ async function processReferencedMarkdownImages(input: {
   return [...processed.values()];
 }
 
-function mergeImageMetadata(
-  manifestImages: F8ImageMetadata[],
-  referencedImages: F8ImageMetadata[]
-): F8ImageMetadata[] {
-  const images = new Map<string, F8ImageMetadata>();
-
-  for (const image of manifestImages) {
-    images.set(image.sourcePath, image);
-  }
-
-  for (const image of referencedImages) {
-    images.set(image.sourcePath, image);
-  }
-
-  return [...images.values()];
-}
-
 function createContentImageResolver(
   images: F8ImageMetadata[],
-  options: { cwd: string; pagePath: string; imageDir: string }
+  options: { cwd: string; pagePath: string }
 ): (src: string) => F8ImageMetadata | undefined {
-  const index = new Map(images.map((image) => [image.relativePath, image]));
   const sourceIndex = new Map(
     images.map((image) => [resolve(options.cwd, image.sourcePath), image])
   );
-  const imageDirMarker = `${normalizeSlug(options.imageDir)}/`;
 
   return (src) => {
     const sourcePath = resolveLocalMarkdownImagePath(src, options);
-    const sourceMatch =
-      sourcePath === undefined ? undefined : sourceIndex.get(sourcePath);
-
-    if (sourceMatch !== undefined) {
-      return sourceMatch;
-    }
-
-    const normalized = normalizeSlug(src.split('#')[0]?.split('?')[0] ?? src);
-    const markerIndex = normalized.lastIndexOf(imageDirMarker);
-
-    if (markerIndex !== -1) {
-      return index.get(normalized.slice(markerIndex + imageDirMarker.length));
-    }
-
-    return index.get(normalized);
+    return sourcePath === undefined ? undefined : sourceIndex.get(sourcePath);
   };
 }
 

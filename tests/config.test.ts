@@ -33,7 +33,6 @@ describe('loadConfig', () => {
     writeFileSync(
       join(cwd, 'f8.config.toml'),
       `contentDir = "stories"
-imageDir = "photos"
 
 [viewer]
 enableMap = true
@@ -44,7 +43,6 @@ enableMap = true
     const result = loadConfig({
       cwd,
       env: {
-        F8_IMAGE_DIR: 'env-images',
         F8_ENABLE_MAP: 'false',
         F8_INCLUDE_GPS_METADATA: 'true',
         F8_ALLOW_UNPROCESSED_IMAGES: 'true'
@@ -53,7 +51,6 @@ enableMap = true
 
     expect(result.path).toBe(join(cwd, 'f8.config.toml'));
     expect(result.config.contentDir).toBe('stories');
-    expect(result.config.imageDir).toBe('env-images');
     expect(result.config.viewer.enableMap).toBe(false);
     expect(result.config.privacy.includeGpsMetadata).toBe(true);
     expect(result.config.security.allowUnprocessedImages).toBe(true);

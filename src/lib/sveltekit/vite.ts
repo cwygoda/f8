@@ -138,12 +138,9 @@ async function loadF8ImportedImage(input: {
   }
 
   const contentRoot = resolve(input.cwd, input.config.contentDir);
-  const configuredImageRoot = resolve(input.cwd, input.config.imageDir);
   const imageRoot = isInsidePath(input.filePath, contentRoot)
     ? contentRoot
-    : isInsidePath(input.filePath, configuredImageRoot)
-      ? configuredImageRoot
-      : dirname(input.filePath);
+    : dirname(input.filePath);
   const result = await processImage(input.filePath, {
     cwd: input.cwd,
     config: input.config,

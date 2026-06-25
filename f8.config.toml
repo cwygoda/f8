@@ -1,13 +1,10 @@
 contentDir = "content"
-imageDir = "images"
 outputDir = ".f8"
 cacheDir = ".f8/cache"
 
 [image]
 widths = [480, 768, 1024, 1440, 1920, 2560]
 formats = ["avif", "webp", "jpeg"]
-sortBy = "path"
-sortDirection = "asc"
 allowUpscale = false
 linearResize = true
 interpolation = "mks"

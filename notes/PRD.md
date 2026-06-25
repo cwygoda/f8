@@ -145,28 +145,8 @@ Outputs may include:
 f8.config.toml
 content/
   index.md
-images/
 .cache/f8/
 ```
-
-#### `f8 index <image-dir> [output-md]`
-
-Scans a directory of images and creates or updates a Markdown index listing all images.
-
-Example:
-
-```bash
-f8 index ./images ./content/index.md
-```
-
-Expected behavior:
-
-- recursively discovers supported image files,
-- sorts by configurable strategy,
-- preserves existing prose where possible,
-- emits image Markdown entries,
-- supports dry run,
-- supports watch mode.
 
 #### Vite/SvelteKit image processing
 
@@ -445,10 +425,10 @@ Requirements:
 Potential exports:
 
 ```ts
-import { processImage, processImageDirectory } from 'f8/pipeline';
-import { renderMarkdown } from 'f8/markdown';
-import { F8Image, F8Gallery, F8Viewer, F8Page } from 'f8/svelte';
-import type { F8Config, F8ImageMetadata } from 'f8/types';
+import { processImage } from '@cwygoda/f8/pipeline';
+import { renderMarkdown } from '@cwygoda/f8/markdown';
+import { F8Image, F8Gallery, F8Viewer } from '@cwygoda/f8/svelte';
+import type { F8Config, F8ImageMetadata } from '@cwygoda/f8/types';
 ```
 
 ### Component Requirements
@@ -582,7 +562,6 @@ Example:
 
 ```toml
 contentDir = "content"
-imageDir = "images"
 outputDir = ".f8"
 cacheDir = ".f8/cache"
 
@@ -613,7 +592,6 @@ For embedders that need programmatic configuration, `f8` may additionally expose
 Environment variable examples:
 
 ```txt
-F8_IMAGE_DIR=images
 F8_CACHE_DIR=.f8/cache
 F8_ENABLE_MAP=false
 ```
@@ -922,8 +900,8 @@ Summary:
 ```bash
 pnpm create f8 my-photo-site
 cd my-photo-site
-cp ~/Pictures/trip/*.jpg images/trip/
-f8 index images/trip content/kyoto.md
+mkdir -p content/kyoto
+cp ~/Pictures/trip/*.jpg content/kyoto/
 pnpm dev
 ```
 
@@ -939,9 +917,9 @@ description: A quiet walk through wet streets and lantern light.
 
 The first storm arrived before dawn.
 
-![](../images/trip/street.jpg)
-![](../images/trip/lantern.jpg)
-![](../images/trip/market.jpg)
+![](./kyoto/street.jpg)
+![](./kyoto/lantern.jpg)
+![](./kyoto/market.jpg)
 
 By evening, the city felt made of reflections.
 ```

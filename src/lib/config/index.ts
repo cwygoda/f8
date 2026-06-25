@@ -84,7 +84,6 @@ function configFromEnv(env: NodeJS.ProcessEnv): DeepPartial<F8Config> {
   const config: DeepPartial<F8Config> = {};
 
   assignString(config, 'contentDir', env.F8_CONTENT_DIR);
-  assignString(config, 'imageDir', env.F8_IMAGE_DIR);
   assignString(config, 'outputDir', env.F8_OUTPUT_DIR);
   assignString(config, 'cacheDir', env.F8_CACHE_DIR);
 

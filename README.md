@@ -1,6 +1,6 @@
 # f8
 
-`f8` is an image-first publishing toolkit for SvelteKit. It will turn folders of images and Markdown into fast, responsive, metadata-rich visual stories.
+`f8` is an image-first publishing toolkit for SvelteKit. It turns Markdown and colocated images into fast, responsive, metadata-rich visual stories.
 
 ## Current foundation
 
@@ -10,7 +10,7 @@
 - mise tool configuration
 - Taskfile quality gates
 - TOML configuration loading with schema validation
-- `f8` CLI with `init`, `config`, and `index` commands
+- `f8` CLI with `init` and `config` commands
 - Vite/SvelteKit-driven image discovery, sidecar metadata parsing, responsive variant generation, EXIF artifacts, blurhash/dominant color metadata, and cache-aware processing
 - Markdown renderer utilities that turn isolated images into captioned figures and consecutive image runs into gallery blocks
 - First-party static SvelteKit starter routes for `content/index.md` and nested Markdown slugs
@@ -70,12 +70,9 @@ Run the source CLI during development:
 pnpm f8 --help
 pnpm f8 init
 pnpm f8 config
-pnpm f8 index images content/index.md
 ```
 
 After `pnpm build`, the package binary is emitted at `dist/cli/index.js`.
-
-`f8 index <image-dir> [output-md]` recursively discovers supported images, sorts them using config, validates paths, and inserts or refreshes a protected `<!-- f8:index:start -->` block while preserving the prose around it. Existing Markdown is backed up to `<output>.bak` before a changed generated block is written; use `--dry-run` to preview or `--no-backup` to opt out.
 
 ## Configuration
 
@@ -86,12 +83,11 @@ After `pnpm build`, the package binary is emitted at `dist/cli/index.js`.
 3. `f8.config.toml`
 4. Defaults
 
-Image pipeline configuration supports widths, formats, sorting, quality, no-upscale behavior, linear resize, and interpolation settings. Privacy defaults avoid publishing GPS metadata (`privacy.includeGpsMetadata = false`) and strip metadata from generated variants (`privacy.stripOutputMetadata = true`). Set `privacy.includeExifMetadata = false` to hide camera settings from generated metadata and overlays.
+Image pipeline configuration supports widths, formats, quality, no-upscale behavior, linear resize, and interpolation settings. Privacy defaults avoid publishing GPS metadata (`privacy.includeGpsMetadata = false`) and strip metadata from generated variants (`privacy.stripOutputMetadata = true`). Set `privacy.includeExifMetadata = false` to hide camera settings from generated metadata and overlays.
 
 Supported environment variables in the current foundation:
 
 - `F8_CONTENT_DIR`
-- `F8_IMAGE_DIR`
 - `F8_OUTPUT_DIR`
 - `F8_CACHE_DIR`
 - `F8_SITE_TITLE`
@@ -139,15 +135,16 @@ The first-party starter site reads Markdown from `content/`, pre-renders with `@
 
 ```bash
 pnpm f8 init
-cp ~/Pictures/trip/*.jpg images/trip/
-pnpm f8 index images content/index.md
+mkdir -p content/trip
+cp ~/Pictures/trip/*.jpg content/trip/
+# reference those images from content/trip.md or content/trip/index.md
 pnpm dev
 pnpm build
 ```
 
 Frontmatter fields such as `title`, `description`, `canonical`, `image`, `ogImage`, `twitterImage`, and `theme` drive page metadata and presentation. `content/index.md` renders at `/`; nested files such as `content/travel/kyoto.md` render at `/travel/kyoto`.
 
-Images can also be colocated with Markdown content and referenced with Markdown-relative paths. When a page is loaded during dev or prerender, f8 processes supported local image references on demand, caches the responsive variants, and rewrites image metadata URLs to `/@f8/<cache-key>/<cache-path>`:
+Images are colocated with Markdown content and referenced with Markdown-relative paths. When a page is loaded during dev or prerender, f8 processes supported local image references on demand, caches the responsive variants, and rewrites image metadata URLs to `/@f8/<cache-key>/<cache-path>`:
 
 ```txt
 content/travel/kyoto.md

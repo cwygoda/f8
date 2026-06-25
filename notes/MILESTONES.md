@@ -41,7 +41,7 @@ This checklist tracks delivery against the project requirements in [`PRD.md`](./
 
 - [x] Implement image discovery for supported formats.
 - [x] Implement recursive directory scanning.
-- [x] Implement configurable image sorting.
+- [x] Implement Markdown-relative image processing.
 - [x] Generate responsive variants.
 - [x] Preserve original base filename in generated asset names.
 - [x] Implement configured widths/formats/quality from `f8.config.toml`.
@@ -146,7 +146,7 @@ This checklist tracks delivery against the project requirements in [`PRD.md`](./
 - [x] Allow image blocks to break wider than prose.
 - [x] Implement polished default design.
 - [x] Implement first-class dark mode.
-- [x] Add `f8 index <image-dir> [output-md]` workflow to starter docs.
+- [x] Add colocated Markdown image workflow to starter docs.
 - [x] Verify example end-to-end workflow.
 
 **Exit criteria**
