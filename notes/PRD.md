@@ -168,9 +168,9 @@ Expected behavior:
 - supports dry run,
 - supports watch mode.
 
-#### `f8 build-images`
+#### Vite/SvelteKit image processing
 
-Runs the image pipeline for all referenced images.
+Runs the image pipeline for referenced images during SvelteKit development and static builds.
 
 Expected behavior:
 
@@ -179,7 +179,9 @@ Expected behavior:
 - computes blurhash,
 - extracts dominant colors,
 - applies sidecar metadata overrides,
-- writes cache artifacts.
+- writes cache artifacts,
+- serves cached variants in dev through the f8 Vite plugin,
+- emits referenced cached variants into static production builds.
 
 #### `f8 dev`
 

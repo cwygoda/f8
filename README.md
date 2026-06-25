@@ -2,8 +2,6 @@
 
 `f8` is an image-first publishing toolkit for SvelteKit. It will turn folders of images and Markdown into fast, responsive, metadata-rich visual stories.
 
-This repository has completed **Milestone 6 — Hardening and Release Readiness** from [`notes/MILESTONES.md`](./notes/MILESTONES.md).
-
 ## Current foundation
 
 - Single-package SvelteKit app/library scaffold
@@ -12,8 +10,8 @@ This repository has completed **Milestone 6 — Hardening and Release Readiness*
 - mise tool configuration
 - Taskfile quality gates
 - TOML configuration loading with schema validation
-- `f8` CLI with `init`, `config`, `index`, and `build-images` commands
-- Image discovery, sidecar metadata parsing, responsive variant generation, EXIF artifacts, blurhash/dominant color metadata, and cache-aware processing
+- `f8` CLI with `init`, `config`, and `index` commands
+- Vite/SvelteKit-driven image discovery, sidecar metadata parsing, responsive variant generation, EXIF artifacts, blurhash/dominant color metadata, and cache-aware processing
 - Markdown renderer utilities that turn isolated images into captioned figures and consecutive image runs into gallery blocks
 - First-party static SvelteKit starter routes for `content/index.md` and nested Markdown slugs
 - SEO frontmatter, canonical URLs, Open Graph, Twitter cards, and `/@f8/` Vite-served image asset wiring
@@ -73,7 +71,6 @@ pnpm f8 --help
 pnpm f8 init
 pnpm f8 config
 pnpm f8 index images content/index.md
-pnpm f8 build-images
 ```
 
 After `pnpm build`, the package binary is emitted at `dist/cli/index.js`.
@@ -138,13 +135,12 @@ Map previews use the optional peer dependency `maplibre-gl`. Install it in consu
 
 ## Static starter workflow
 
-The first-party starter site reads Markdown from `content/`, pre-renders with `@sveltejs/adapter-static`, and serves optimized image variants through the f8 Vite plugin. In dev, `/@f8/` URLs are resolved directly from `.f8/cache`; during production builds, the plugin emits those cached assets into the static output.
+The first-party starter site reads Markdown from `content/`, pre-renders with `@sveltejs/adapter-static`, and processes referenced images through the f8 SvelteKit content loader and Vite plugin. In dev, `/@f8/` URLs are resolved directly from `.f8/cache`; during production builds, the plugin emits those cached assets into the static output.
 
 ```bash
 pnpm f8 init
 cp ~/Pictures/trip/*.jpg images/trip/
 pnpm f8 index images content/index.md
-pnpm f8 build-images
 pnpm dev
 pnpm build
 ```
@@ -184,13 +180,7 @@ Hardening checks include Vitest accessibility smoke tests, Playwright desktop/mo
 
 ## SvelteKit `+page.md` routes
 
-Run the image pipeline first so `.f8/cache/manifest.json` exists:
-
-```bash
-pnpm f8 build-images
-```
-
-Then wire f8 into `svelte.config.js` with mdsvex:
+Wire f8 into `svelte.config.js` with mdsvex:
 
 ```js
 import adapter from '@sveltejs/adapter-static';
@@ -211,7 +201,7 @@ const config = {
 export default config;
 ```
 
-After that, SvelteKit can route Markdown pages such as `src/routes/+page.md` and `src/routes/travel/+page.md`, with f8 image figures/galleries applied during mdsvex compilation.
+After that, SvelteKit can route Markdown pages such as `src/routes/+page.md` and `src/routes/travel/+page.md`, with f8 image figures/galleries applied during mdsvex compilation from image metadata supplied to the integration. For the first-party static starter, the `content/` routes and Vite plugin handle referenced images on demand without a separate CLI image-build step.
 
 ## Commit messages
 

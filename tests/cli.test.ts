@@ -159,29 +159,4 @@ describe('f8 CLI', () => {
     expect(messages.join('\n')).toContain('Generated 1 image(s).');
     expect(messages.join('\n')).toContain('![](../images/dry-run.jpg)');
   });
-
-  it('builds images from the CLI', async () => {
-    const cwd = fixtureDir();
-    initProject({ cwd, force: false });
-    await sharp({
-      create: {
-        width: 16,
-        height: 8,
-        channels: 3,
-        background: '#224466'
-      }
-    })
-      .jpeg()
-      .toFile(join(cwd, 'images', 'cli-photo.jpg'));
-    const messages: string[] = [];
-
-    const exitCode = await main(['build-images'], {
-      cwd,
-      stdout: (message) => messages.push(message)
-    });
-
-    expect(exitCode).toBe(0);
-    expect(messages.join('\n')).toContain('Processed 1 image(s).');
-    expect(existsSync(join(cwd, '.f8', 'cache', 'cli-photo'))).toBe(true);
-  });
 });

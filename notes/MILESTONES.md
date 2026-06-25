@@ -55,7 +55,7 @@ This checklist tracks delivery against the project requirements in [`PRD.md`](./
 - [x] Apply sidecar metadata override precedence.
 - [x] Implement cache key generation from relative path, source hash/mtime, config hash, sidecar hash, and pipeline version.
 - [x] Write metadata artifacts matching `F8ImageMetadata`.
-- [x] Add `f8 build-images` command.
+- [x] Add Vite/SvelteKit-driven on-demand image processing.
 
 **Exit criteria**
 

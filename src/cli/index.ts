@@ -11,10 +11,7 @@ import { dirname, extname, join, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import { F8ConfigError, loadConfig } from '../lib/config/index.js';
-import {
-  discoverImages,
-  processImageDirectory
-} from '../lib/pipeline/index.js';
+import { discoverImages } from '../lib/pipeline/index.js';
 import type { F8Config } from '../lib/config/index.js';
 
 const HELP_TEXT = `f8 — image-first publishing toolkit for SvelteKit
@@ -25,14 +22,13 @@ Usage:
 Commands:
   init          Create starter f8 project files
   config        Validate and print the resolved configuration
-  build-images  Generate responsive image variants and metadata artifacts
   index <image-dir> [output-md]
                 Create or update a Markdown index for an image directory
   help          Show this help message
 
 Options:
   -h, --help    Show this help message
-  --force       Overwrite files when used with init or build-images
+  --force       Overwrite files when used with init
   --dry-run     Print generated Markdown when used with index
   --no-backup   Do not create a .bak file before changing an existing index
 `;
@@ -92,17 +88,6 @@ export async function main(
     if (command === 'config') {
       const { config, path } = loadConfig({ cwd });
       stdout(JSON.stringify({ path, config }, null, 2));
-      return 0;
-    }
-
-    if (command === 'build-images') {
-      const { config } = loadConfig({ cwd });
-      const result = await processImageDirectory({
-        cwd,
-        config,
-        force: args.includes('--force')
-      });
-      stdout(formatBuildImagesResult(result));
       return 0;
     }
 
@@ -256,17 +241,6 @@ function formatInitResult(result: InitResult): string {
   }
 
   return lines.join('\n');
-}
-
-function formatBuildImagesResult(
-  result: Awaited<ReturnType<typeof processImageDirectory>>
-): string {
-  return [
-    `Processed ${result.images.length} image(s).`,
-    `generated ${result.generated}`,
-    `cached ${result.cached}`,
-    `manifest ${result.manifestPath}`
-  ].join('\n');
 }
 
 function formatIndexImagesResult(result: IndexImagesResult): string {
@@ -428,7 +402,6 @@ Drop images into \`images/\`, then run:
 
 \`\`\`bash
 f8 index images content/index.md
-f8 build-images
 pnpm dev
 \`\`\`
 `;
