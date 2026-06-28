@@ -10,7 +10,7 @@ test.describe('f8 static starter', () => {
     ).toBeVisible();
     await expect(page.locator('meta[name="description"]')).toHaveAttribute(
       'content',
-      /static photo essay/
+      /responsive photo essays/
     );
   });
 
