@@ -1,31 +1,47 @@
-# Release readiness
+# Release process
 
-## Quality gates
+See [Trunk-based development and releases](./TRUNK_BASED.md) for the full guide.
 
-Run the local release-readiness gate before publishing:
+## Shape of the flow
 
-```bash
-pnpm install
-pnpm lint
-pnpm check
-pnpm test
-pnpm build
-pnpm release:dry-run
+```text
+push to main
+  -> CI verifies local-quality gates again
+  -> semantic-release derives the next version
+  -> semantic-release commits package.json + CHANGELOG.md as chore(release): vX.Y.Z
+  -> semantic-release creates vX.Y.Z tag and GitHub Release
+  -> CI skips the release commit
+  -> tag push triggers npm publish with provenance
 ```
 
-Optional browser coverage requires Playwright browsers:
+The release commit is part of trunk history, so `package.json` and `CHANGELOG.md` match the latest published package. npm publishing only happens from the tag.
+
+## Releasable commits
+
+- `feat: ...` -> minor
+- `fix: ...` -> patch
+- `perf: ...` -> patch
+- `type!: ...` or `BREAKING CHANGE:` -> major
+
+Other Conventional Commit types do not create npm releases by themselves.
+
+## Local checks
+
+Before pushing to `main`, run the local gate:
 
 ```bash
-pnpm test:e2e:install
-pnpm test:e2e
+pnpm quality
 ```
 
-## Conventional Commit release flow
+For release-sensitive changes, also run:
 
-`pnpm release:dry-run` reads Conventional Commit subjects since the latest Git tag, determines the next semantic version (`feat` = minor, `fix`/other = patch, `!` = major), and prints the changelog entry without writing files.
+```bash
+pnpm consumer:check
+pnpm pack:check
+```
 
-`pnpm changelog` updates `CHANGELOG.md` only. `pnpm release` updates both `CHANGELOG.md` and `package.json`.
+## Required setup
 
-## Package checks
-
-`pnpm pack:check` builds the library and runs `pnpm pack --dry-run` so the published files and package exports can be reviewed before publishing.
+- Add `RELEASE_TOKEN` with Contents read/write so `.github/workflows/release.yml` can push release commits and tags that trigger `.github/workflows/publish.yml`.
+- Configure npm Trusted Publishing for `.github/workflows/publish.yml`.
+- Keep GitHub history linear: no merge commits. If PRs are used, use rebase merge only.
