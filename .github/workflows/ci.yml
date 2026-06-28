@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check:
+  lint:
     if: >-
       ${{ github.event_name != 'push' ||
       !startsWith(github.event.head_commit.message, 'chore(release):') }}
@@ -45,6 +45,24 @@ jobs:
           pnpm exec commitlint --from "$from" --to "$to"
       - run: pnpm lint
       - run: pnpm check
+
+  test:
+    if: >-
+      ${{ github.event_name != 'push' ||
+      !startsWith(github.event.head_commit.message, 'chore(release):') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.6.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
       - run: pnpm test
       - run: pnpm build
       - run: pnpm consumer:check
