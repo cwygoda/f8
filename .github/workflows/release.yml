@@ -20,22 +20,17 @@ jobs:
       github.event.workflow_run.head_branch == 'main' }}
     runs-on: ubuntu-latest
     steps:
-      - name: Require release token
-        env:
-          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-        run: |
-          set -euo pipefail
-          if [ -z "$RELEASE_TOKEN" ]; then
-            echo "RELEASE_TOKEN is required so release commits and tags trigger downstream workflows."
-            echo "Use a fine-grained PAT or GitHub App token with Contents read/write for this repo."
-            exit 1
-          fi
+      - id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ vars.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
 
       - uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0
-          token: ${{ secrets.RELEASE_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Ensure this CI run is still current main
         id: current
@@ -64,9 +59,9 @@ jobs:
       - name: Create release commit, tag, and GitHub Release
         if: steps.current.outputs.current == 'true'
         env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-          GIT_AUTHOR_NAME: semantic-release-bot
-          GIT_AUTHOR_EMAIL: semantic-release-bot@martynus.net
-          GIT_COMMITTER_NAME: semantic-release-bot
-          GIT_COMMITTER_EMAIL: semantic-release-bot@martynus.net
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          GIT_AUTHOR_NAME: f8-release-bot
+          GIT_AUTHOR_EMAIL: f8-release-bot@users.noreply.github.com
+          GIT_COMMITTER_NAME: f8-release-bot
+          GIT_COMMITTER_EMAIL: f8-release-bot@users.noreply.github.com
         run: pnpm exec semantic-release
