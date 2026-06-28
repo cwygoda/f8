@@ -43,7 +43,7 @@ pnpm pack:check
 ## Required setup
 
 - Create and install a release GitHub App with Contents read/write.
-- Add repository variable `RELEASE_APP_ID`.
-- Add repository secret `RELEASE_APP_PRIVATE_KEY`.
-- Configure npm Trusted Publishing for `.github/workflows/publish.yml`.
+- In the `npmjs` GitHub environment, add variable `RELEASE_APP_ID`.
+- In the `npmjs` GitHub environment, add secret `RELEASE_APP_PRIVATE_KEY`.
+- Configure npm Trusted Publishing for `.github/workflows/publish.yml` with environment `npmjs`.
 - Keep GitHub history linear: no merge commits. If PRs are used, use rebase merge only.
