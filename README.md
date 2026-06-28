@@ -20,7 +20,7 @@
 - Automated accessibility smoke checks for rendered components
 - Privacy controls for GPS/EXIF metadata and output metadata stripping
 - Markdown URL sanitization and unprocessed-image safeguards
-- Release preparation scripts for Conventional Commit changelogs and version bumps
+- semantic-release automation for Conventional Commit releases, changelogs, tags, and GitHub Releases
 - ESLint, complexity checks, Prettier, Commitlint, Husky, and CI workflow
 
 ## Requirements
@@ -50,7 +50,6 @@ pnpm test     # Vitest unit, browser, and accessibility tests
 pnpm test:e2e # Playwright tests across configured viewports
 pnpm build    # SvelteKit build + package artifacts + CLI build
 pnpm check    # Svelte/TypeScript check
-pnpm release:dry-run # preview Conventional Commit version/changelog output
 ```
 
 Task aliases:

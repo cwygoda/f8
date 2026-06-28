@@ -36,7 +36,6 @@ tasks:
       - pnpm test
       - pnpm build
       - pnpm consumer:check
-      - pnpm release:dry-run
 
   quality:
     desc: Alias for the complete quality gate
