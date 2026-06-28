@@ -121,12 +121,12 @@ Use repository rulesets/branch protection, not CI, to enforce linear history and
 
 Create a GitHub App for release automation and install it on this repository. The app needs repository Contents read/write permission so semantic-release can push the release commit and tag and create the GitHub Release.
 
-Configure these repository settings:
+Configure these settings in the `npmjs` GitHub environment:
 
-- variable: `RELEASE_APP_ID`
-- secret: `RELEASE_APP_PRIVATE_KEY`
+- environment variable: `RELEASE_APP_ID`
+- environment secret: `RELEASE_APP_PRIVATE_KEY`
 
-The release workflow exchanges those values for a short-lived installation token with `actions/create-github-app-token`. This is needed because release commits and tag pushes made with the default `GITHUB_TOKEN` do not trigger downstream workflows reliably.
+The release workflow declares `environment: npmjs`, then exchanges those values for a short-lived installation token with `actions/create-github-app-token`. This is needed because release commits and tag pushes made with the default `GITHUB_TOKEN` do not trigger downstream workflows reliably.
 
 If branch protection later restricts direct pushes to `main`, allow this app to push release commits without merge commits.
 
@@ -136,5 +136,6 @@ Configure npm Trusted Publishing for:
 
 - repository: `cwygoda/f8`
 - workflow: `.github/workflows/publish.yml`
+- environment: `npmjs`
 
 No `NPM_TOKEN` is required.
