@@ -42,6 +42,8 @@ pnpm pack:check
 
 ## Required setup
 
-- Add `RELEASE_TOKEN` with Contents read/write so `.github/workflows/release.yml` can push release commits and tags that trigger `.github/workflows/publish.yml`.
+- Create and install a release GitHub App with Contents read/write.
+- Add repository variable `RELEASE_APP_ID`.
+- Add repository secret `RELEASE_APP_PRIVATE_KEY`.
 - Configure npm Trusted Publishing for `.github/workflows/publish.yml`.
 - Keep GitHub history linear: no merge commits. If PRs are used, use rebase merge only.

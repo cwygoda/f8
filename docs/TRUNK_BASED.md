@@ -117,11 +117,18 @@ Use repository rulesets/branch protection, not CI, to enforce linear history and
 
 ## Required automation setup
 
-### `RELEASE_TOKEN`
+### Release GitHub App
 
-Create a repository secret named `RELEASE_TOKEN` for `.github/workflows/release.yml`.
+Create a GitHub App for release automation and install it on this repository. The app needs repository Contents read/write permission so semantic-release can push the release commit and tag and create the GitHub Release.
 
-Use a fine-grained PAT or GitHub App token with Contents read/write access to this repository. This is needed because release commits and tag pushes made with the default `GITHUB_TOKEN` do not trigger downstream workflows reliably.
+Configure these repository settings:
+
+- variable: `RELEASE_APP_ID`
+- secret: `RELEASE_APP_PRIVATE_KEY`
+
+The release workflow exchanges those values for a short-lived installation token with `actions/create-github-app-token`. This is needed because release commits and tag pushes made with the default `GITHUB_TOKEN` do not trigger downstream workflows reliably.
+
+If branch protection later restricts direct pushes to `main`, allow this app to push release commits without merge commits.
 
 ### npm Trusted Publishing
 
