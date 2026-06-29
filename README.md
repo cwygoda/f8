@@ -67,8 +67,8 @@ Run the source CLI during development:
 
 ```bash
 pnpm f8 --help
-pnpm f8 init
-pnpm f8 init ./photos # use an existing photo directory
+pnpm f8 init          # scaffold a buildable f8 SvelteKit project in the current directory
+pnpm f8 init ./my-site # scaffold a buildable f8 SvelteKit project in ./my-site
 pnpm f8 config
 ```
 
@@ -134,8 +134,9 @@ Map previews use the optional peer dependency `maplibre-gl`. Install it in consu
 The first-party starter site reads Markdown from the configured content directory, pre-renders with `@sveltejs/adapter-static`, and processes referenced images through the f8 SvelteKit content loader and Vite plugin. In dev, `/@f8/` URLs are resolved directly from `.f8/cache`; during production builds, the plugin emits those cached assets into the static output.
 
 ```bash
-pnpm f8 init ./photos
-# reference existing photos from photos/index.md or nested Markdown files
+pnpm f8 init ./my-site
+cd ./my-site
+pnpm install
 pnpm dev
 pnpm build
 ```

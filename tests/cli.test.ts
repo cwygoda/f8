@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -22,54 +22,80 @@ describe('f8 CLI', () => {
 
     expect(exitCode).toBe(0);
     expect(messages.join('\n')).toContain('Usage:');
+    expect(messages.join('\n')).toContain(
+      'complete buildable f8 SvelteKit project'
+    );
     expect(messages.join('\n')).not.toContain('index <image-dir>');
   });
 
-  it('initializes starter files', () => {
+  it('initializes a complete project in the current directory', () => {
     const cwd = fixtureDir();
 
     const result = initProject({ cwd, force: false });
 
+    expect(result.projectRoot).toBe(cwd);
     expect(result.created).toEqual(
       expect.arrayContaining([
-        join(cwd, 'content'),
+        cwd,
+        join(cwd, 'package.json'),
         join(cwd, '.f8.toml'),
+        join(cwd, 'svelte.config.js'),
+        join(cwd, 'vite.config.ts'),
+        join(cwd, 'tsconfig.json'),
+        join(cwd, 'src', 'app.html'),
+        join(cwd, 'src', 'routes', '+layout.ts'),
+        join(cwd, 'src', 'routes', '[...slug]', '+page.server.ts'),
+        join(cwd, 'src', 'routes', '[...slug]', '+page.svelte'),
         join(cwd, 'content', 'index.md')
       ])
     );
-    expect(result.created).not.toContain(join(cwd, 'images'));
-    expect(existsSync(join(cwd, '.f8.toml'))).toBe(true);
+    expect(existsSync(join(cwd, 'package.json'))).toBe(true);
+    expect(readFileSync(join(cwd, 'package.json'), 'utf8')).toContain(
+      '"build": "svelte-kit sync && vite build"'
+    );
+    expect(readFileSync(join(cwd, 'vite.config.ts'), 'utf8')).toContain(
+      "from '@cwygoda/f8/sveltekit'"
+    );
     expect(readFileSync(join(cwd, 'content', 'index.md'), 'utf8')).toContain(
       'Welcome to f8'
     );
   });
 
-  it('uses an existing photo directory when provided', () => {
+  it('initializes a complete project in the provided directory', () => {
     const cwd = fixtureDir();
-    const photos = join(cwd, 'photos');
-    mkdirSync(photos, { recursive: true });
+    const project = join(cwd, 'my-site');
 
-    const result = initProject({ cwd, force: false, contentDir: 'photos' });
+    const result = initProject({ cwd, force: false, projectDir: 'my-site' });
 
+    expect(result.projectRoot).toBe(project);
     expect(result.created).toEqual(
-      expect.arrayContaining([join(cwd, '.f8.toml'), join(photos, 'index.md')])
+      expect.arrayContaining([
+        project,
+        join(project, 'package.json'),
+        join(project, 'content', 'index.md')
+      ])
     );
-    expect(result.created).not.toContain(join(cwd, 'content'));
-    expect(readFileSync(join(cwd, '.f8.toml'), 'utf8')).toContain(
-      'contentDir = "photos"'
+    expect(readFileSync(join(project, 'package.json'), 'utf8')).toContain(
+      '"name": "my-site"'
+    );
+    expect(readFileSync(join(project, '.f8.toml'), 'utf8')).toContain(
+      'contentDir = "content"'
     );
   });
 
-  it('returns an error when init is given a missing photo directory', async () => {
+  it('creates the provided project directory when it does not exist', async () => {
     const messages: string[] = [];
+    const cwd = fixtureDir();
 
     const exitCode = await main(['init', 'photos'], {
-      cwd: fixtureDir(),
-      stderr: (message) => messages.push(message)
+      cwd,
+      stdout: (message) => messages.push(message)
     });
 
-    expect(exitCode).toBe(1);
-    expect(messages.join('\n')).toContain('Photo directory does not exist');
+    expect(exitCode).toBe(0);
+    expect(messages.join('\n')).toContain('Initialized f8 project');
+    expect(existsSync(join(cwd, 'photos', 'package.json'))).toBe(true);
+    expect(existsSync(join(cwd, 'photos', 'content', 'index.md'))).toBe(true);
   });
 
   it('does not overwrite existing starter files unless forced', () => {
@@ -80,6 +106,7 @@ describe('f8 CLI', () => {
 
     expect(result.skipped).toEqual(
       expect.arrayContaining([
+        join(cwd, 'package.json'),
         join(cwd, '.f8.toml'),
         join(cwd, 'content', 'index.md')
       ])
