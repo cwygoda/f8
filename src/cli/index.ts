@@ -1,6 +1,14 @@
 #!/usr/bin/env node
-import { existsSync, mkdirSync, statSync, writeFileSync } from 'node:fs';
-import { basename, dirname, join, resolve } from 'node:path';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  renameSync,
+  statSync,
+  writeFileSync
+} from 'node:fs';
+import { basename, dirname, extname, join, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import { F8ConfigError, loadConfig } from '../lib/config/index.js';
@@ -31,7 +39,10 @@ export interface CliOptions extends CliIO {
 
 interface InitResult {
   projectRoot: string;
+  projectPath: string;
   created: string[];
+  moved: string[];
+  updated: string[];
   skipped: string[];
 }
 
@@ -90,11 +101,19 @@ export function initProject({
   projectDir?: string;
 }): InitResult {
   const created: string[] = [];
+  const moved: string[] = [];
+  const updated: string[] = [];
   const skipped: string[] = [];
   const projectRoot = resolve(cwd, projectDir ?? '.');
+  const projectPath = relative(cwd, projectRoot) || '.';
   const projectName = packageNameFromProjectRoot(projectRoot);
+  const projectRootExists = existsSync(projectRoot);
 
   ensureDirectory(projectRoot, created);
+
+  if (projectDir !== undefined && projectRootExists) {
+    moveExistingContentToContentDir(projectRoot, force, created, moved);
+  }
 
   for (const file of starterProjectFiles(projectName)) {
     writeStarterFile(
@@ -106,7 +125,9 @@ export function initProject({
     );
   }
 
-  return { projectRoot, created, skipped };
+  updateIndexMarkdownWithImageReferences(join(projectRoot, 'content'), updated);
+
+  return { projectRoot, projectPath, created, moved, updated, skipped };
 }
 
 function ensureDirectory(path: string, created: string[]): void {
@@ -124,6 +145,147 @@ function ensureDirectory(path: string, created: string[]): void {
 
 function getInitProjectDirArg(args: string[]): string | undefined {
   return args.find((arg) => !arg.startsWith('-'));
+}
+
+function moveExistingContentToContentDir(
+  projectRoot: string,
+  force: boolean,
+  created: string[],
+  moved: string[]
+): void {
+  if (hasProjectScaffold(projectRoot)) {
+    return;
+  }
+
+  const entries = readdirSync(projectRoot).filter(
+    (entry) => entry !== 'content'
+  );
+
+  if (entries.length === 0) {
+    return;
+  }
+
+  const contentRoot = join(projectRoot, 'content');
+  ensureDirectory(contentRoot, created);
+
+  for (const entry of entries) {
+    const from = join(projectRoot, entry);
+    const to = join(contentRoot, entry);
+
+    if (existsSync(to) && !force) {
+      throw new Error(
+        `Cannot move ${from} to ${to}: destination already exists; use --force to overwrite`
+      );
+    }
+
+    renameSync(from, to);
+    moved.push(to);
+  }
+}
+
+function hasProjectScaffold(projectRoot: string): boolean {
+  return [
+    'package.json',
+    'svelte.config.js',
+    'vite.config.ts',
+    '.f8.toml',
+    'src',
+    '.git'
+  ].some((entry) => existsSync(join(projectRoot, entry)));
+}
+
+const MARKDOWN_IMAGE_EXTENSIONS = new Set([
+  '.avif',
+  '.jpeg',
+  '.jpg',
+  '.png',
+  '.tif',
+  '.tiff',
+  '.webp'
+]);
+
+function updateIndexMarkdownWithImageReferences(
+  contentRoot: string,
+  updated: string[]
+): void {
+  const indexPath = join(contentRoot, 'index.md');
+
+  if (!existsSync(indexPath)) {
+    return;
+  }
+
+  const imageReferences = listImageFiles(contentRoot)
+    .map((imagePath) => imageReferenceForMarkdown(contentRoot, imagePath))
+    .sort((left, right) => left.url.localeCompare(right.url));
+
+  if (imageReferences.length === 0) {
+    return;
+  }
+
+  const existingMarkdown = readFileSync(indexPath, 'utf8');
+  const missingReferences = imageReferences.filter(
+    (reference) => !markdownReferencesImage(existingMarkdown, reference.url)
+  );
+
+  if (missingReferences.length === 0) {
+    return;
+  }
+
+  const imageSection = missingReferences
+    .map((reference) => `![${reference.alt}](${reference.url})`)
+    .join('\n\n');
+  const nextMarkdown = `${existingMarkdown.trimEnd()}\n\n## Images\n\n${imageSection}\n`;
+
+  writeFileSync(indexPath, nextMarkdown, 'utf8');
+  updated.push(indexPath);
+}
+
+function listImageFiles(root: string): string[] {
+  if (!existsSync(root)) {
+    return [];
+  }
+
+  const images: string[] = [];
+
+  for (const entry of readdirSync(root)) {
+    const path = join(root, entry);
+    const stats = statSync(path);
+
+    if (stats.isDirectory()) {
+      images.push(...listImageFiles(path));
+      continue;
+    }
+
+    if (MARKDOWN_IMAGE_EXTENSIONS.has(extname(entry).toLowerCase())) {
+      images.push(path);
+    }
+  }
+
+  return images;
+}
+
+function imageReferenceForMarkdown(
+  contentRoot: string,
+  imagePath: string
+): { alt: string; url: string } {
+  const relativePath = relative(contentRoot, imagePath).replaceAll('\\', '/');
+  const url = `./${encodeURI(relativePath).replace(/#/g, '%23').replace(/\?/g, '%3F')}`;
+  const alt = basename(relativePath, extname(relativePath))
+    .replace(/[-_]+/g, ' ')
+    .trim();
+
+  return { alt: alt.length > 0 ? alt : 'Image', url };
+}
+
+function markdownReferencesImage(markdown: string, imageUrl: string): boolean {
+  const withoutDotSlash = imageUrl.startsWith('./')
+    ? imageUrl.slice(2)
+    : imageUrl;
+
+  return (
+    markdown.includes(`](${imageUrl})`) ||
+    markdown.includes(`](${withoutDotSlash})`)
+  );
 }
 
 function writeStarterFile(
@@ -150,6 +312,14 @@ function formatInitResult(result: InitResult): string {
     lines.push(`created ${path}`);
   }
 
+  for (const path of result.moved) {
+    lines.push(`moved ${path}`);
+  }
+
+  for (const path of result.updated) {
+    lines.push(`updated ${path}`);
+  }
+
   for (const path of result.skipped) {
     lines.push(`skipped ${path} (already exists; use --force to overwrite)`);
   }
@@ -157,7 +327,7 @@ function formatInitResult(result: InitResult): string {
   lines.push(
     '',
     'Next steps:',
-    `  cd ${result.projectRoot}`,
+    `  cd ${result.projectPath}`,
     '  pnpm install',
     '  pnpm build'
   );

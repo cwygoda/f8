@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -34,6 +34,7 @@ describe('f8 CLI', () => {
     const result = initProject({ cwd, force: false });
 
     expect(result.projectRoot).toBe(cwd);
+    expect(result.projectPath).toBe('.');
     expect(result.created).toEqual(
       expect.arrayContaining([
         cwd,
@@ -68,6 +69,7 @@ describe('f8 CLI', () => {
     const result = initProject({ cwd, force: false, projectDir: 'my-site' });
 
     expect(result.projectRoot).toBe(project);
+    expect(result.projectPath).toBe('my-site');
     expect(result.created).toEqual(
       expect.arrayContaining([
         project,
@@ -83,6 +85,47 @@ describe('f8 CLI', () => {
     );
   });
 
+  it('moves existing contents of the provided directory into content', () => {
+    const cwd = fixtureDir();
+    const project = join(cwd, 'photos');
+    mkdirSync(join(project, 'album'), { recursive: true });
+    writeFileSync(join(project, 'photo.jpg'), 'fake photo', 'utf8');
+    writeFileSync(join(project, 'album', 'note.md'), 'nested note', 'utf8');
+    writeFileSync(
+      join(project, 'album', 'nested photo.png'),
+      'fake nested photo',
+      'utf8'
+    );
+    writeFileSync(join(project, 'index.md'), '# Existing photos', 'utf8');
+
+    const result = initProject({ cwd, force: false, projectDir: 'photos' });
+
+    expect(result.moved).toEqual(
+      expect.arrayContaining([
+        join(project, 'content', 'photo.jpg'),
+        join(project, 'content', 'album'),
+        join(project, 'content', 'index.md')
+      ])
+    );
+    expect(existsSync(join(project, 'photo.jpg'))).toBe(false);
+    expect(existsSync(join(project, 'content', 'photo.jpg'))).toBe(true);
+    expect(existsSync(join(project, 'content', 'album', 'note.md'))).toBe(true);
+    expect(
+      existsSync(join(project, 'content', 'album', 'nested photo.png'))
+    ).toBe(true);
+    expect(result.updated).toContain(join(project, 'content', 'index.md'));
+    const indexMarkdown = readFileSync(
+      join(project, 'content', 'index.md'),
+      'utf8'
+    );
+    expect(indexMarkdown).toContain('# Existing photos');
+    expect(indexMarkdown).toContain('![photo](./photo.jpg)');
+    expect(indexMarkdown).toContain(
+      '![nested photo](./album/nested%20photo.png)'
+    );
+    expect(result.skipped).toContain(join(project, 'content', 'index.md'));
+  });
+
   it('creates the provided project directory when it does not exist', async () => {
     const messages: string[] = [];
     const cwd = fixtureDir();
@@ -94,6 +137,8 @@ describe('f8 CLI', () => {
 
     expect(exitCode).toBe(0);
     expect(messages.join('\n')).toContain('Initialized f8 project');
+    expect(messages.join('\n')).toContain('  cd photos');
+    expect(messages.join('\n')).not.toContain(`  cd ${join(cwd, 'photos')}`);
     expect(existsSync(join(cwd, 'photos', 'package.json'))).toBe(true);
     expect(existsSync(join(cwd, 'photos', 'content', 'index.md'))).toBe(true);
   });

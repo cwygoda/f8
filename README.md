@@ -72,6 +72,8 @@ pnpm f8 init ./my-site # scaffold a buildable f8 SvelteKit project in ./my-site
 pnpm f8 config
 ```
 
+If the target directory already contains photos or Markdown, `init` moves those existing entries into the new `content/` directory before writing the project scaffold. It also updates `content/index.md` to reference discovered images.
+
 After `pnpm build`, the package binary is emitted at `dist/cli/index.js`.
 
 ## Configuration
