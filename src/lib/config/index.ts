@@ -17,7 +17,7 @@ export type {
   F8ViewerConfig
 } from './schema.js';
 
-export const DEFAULT_CONFIG_FILE = 'f8.config.toml';
+export const DEFAULT_CONFIG_FILE = '.f8.toml';
 
 export type DeepPartial<T> = {
   [K in keyof T]?: T[K] extends Record<string, unknown>

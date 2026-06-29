@@ -142,7 +142,7 @@ Creates starter project files.
 Outputs may include:
 
 ```txt
-f8.config.toml
+.f8.toml
 content/
   index.md
 .cache/f8/
@@ -553,10 +553,10 @@ Configuration sources, in order of precedence:
 
 1. CLI flags,
 2. environment variables,
-3. `f8.config.toml`,
+3. `.f8.toml`,
 4. defaults.
 
-`f8.config.toml` is the canonical project configuration format. It should be simple to read, easy to edit without TypeScript knowledge, and validated against the same internal schema used by the CLI and library APIs.
+`.f8.toml` is the canonical project configuration format. It should be simple to read, easy to edit without TypeScript knowledge, and validated against the same internal schema used by the CLI and library APIs.
 
 Example:
 

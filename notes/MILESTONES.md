@@ -14,7 +14,7 @@ This checklist tracks delivery against the project requirements in [`PRD.md`](./
 - [x] Add pnpm workspace/project setup.
 - [x] Add mise configuration.
 - [x] Add Taskfile commands.
-- [x] Add `f8.config.toml` loading and schema validation foundation.
+- [x] Add `.f8.toml` loading and schema validation foundation.
 - [x] Add initial CLI entrypoint.
 - [x] Add basic `f8 init` command.
 - [x] Add lint command.
@@ -44,7 +44,7 @@ This checklist tracks delivery against the project requirements in [`PRD.md`](./
 - [x] Implement Markdown-relative image processing.
 - [x] Generate responsive variants.
 - [x] Preserve original base filename in generated asset names.
-- [x] Implement configured widths/formats/quality from `f8.config.toml`.
+- [x] Implement configured widths/formats/quality from `.f8.toml`.
 - [x] Prevent upscaling by default.
 - [x] Implement high-quality resizing defaults, including linear resize/MKS interpolation where supported.
 - [x] Extract normalized EXIF metadata.

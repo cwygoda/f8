@@ -27,11 +27,11 @@ describe('loadConfig', () => {
     expect(result.config.security.sanitizeMarkdown).toBe(true);
   });
 
-  it('loads f8.config.toml and applies env overrides', () => {
+  it('loads .f8.toml and applies env overrides', () => {
     const cwd = fixtureDir();
     mkdirSync(cwd, { recursive: true });
     writeFileSync(
-      join(cwd, 'f8.config.toml'),
+      join(cwd, '.f8.toml'),
       `contentDir = "stories"
 
 [viewer]
@@ -49,7 +49,7 @@ enableMap = true
       }
     });
 
-    expect(result.path).toBe(join(cwd, 'f8.config.toml'));
+    expect(result.path).toBe(join(cwd, '.f8.toml'));
     expect(result.config.contentDir).toBe('stories');
     expect(result.config.viewer.enableMap).toBe(false);
     expect(result.config.privacy.includeGpsMetadata).toBe(true);
@@ -60,7 +60,7 @@ enableMap = true
     const cwd = fixtureDir();
     mkdirSync(cwd, { recursive: true });
     writeFileSync(
-      join(cwd, 'f8.config.toml'),
+      join(cwd, '.f8.toml'),
       `unknownKey = true
 `,
       'utf8'

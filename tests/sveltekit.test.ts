@@ -87,7 +87,7 @@ title: Nested Kyoto
       'utf8'
     );
     writeFileSync(
-      join(cwd, 'f8.config.toml'),
+      join(cwd, '.f8.toml'),
       `contentDir = "content"
 cacheDir = ".f8/cache"
 
@@ -149,7 +149,7 @@ title: Nested Kyoto
       'utf8'
     );
     writeFileSync(
-      join(cwd, 'f8.config.toml'),
+      join(cwd, '.f8.toml'),
       `contentDir = "content"
 cacheDir = ".f8/cache"
 

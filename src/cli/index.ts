@@ -86,7 +86,7 @@ export function initProject({
 
   ensureDirectory(join(cwd, 'content'), created);
   writeStarterFile(
-    join(cwd, 'f8.config.toml'),
+    join(cwd, '.f8.toml'),
     starterConfig,
     force,
     created,

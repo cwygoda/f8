@@ -75,11 +75,11 @@ After `pnpm build`, the package binary is emitted at `dist/cli/index.js`.
 
 ## Configuration
 
-`f8.config.toml` is the canonical project configuration file. Configuration precedence is:
+`.f8.toml` is the canonical project configuration file. Configuration precedence is:
 
 1. CLI/programmatic overrides
 2. Environment variables
-3. `f8.config.toml`
+3. `.f8.toml`
 4. Defaults
 
 Image pipeline configuration supports widths, formats, quality, no-upscale behavior, linear resize, and interpolation settings. Privacy defaults avoid publishing GPS metadata (`privacy.includeGpsMetadata = false`) and strip metadata from generated variants (`privacy.stripOutputMetadata = true`). Set `privacy.includeExifMetadata = false` to hide camera settings from generated metadata and overlays.

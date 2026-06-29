@@ -33,12 +33,12 @@ describe('f8 CLI', () => {
     expect(result.created).toEqual(
       expect.arrayContaining([
         join(cwd, 'content'),
-        join(cwd, 'f8.config.toml'),
+        join(cwd, '.f8.toml'),
         join(cwd, 'content', 'index.md')
       ])
     );
     expect(result.created).not.toContain(join(cwd, 'images'));
-    expect(existsSync(join(cwd, 'f8.config.toml'))).toBe(true);
+    expect(existsSync(join(cwd, '.f8.toml'))).toBe(true);
     expect(readFileSync(join(cwd, 'content', 'index.md'), 'utf8')).toContain(
       'Welcome to f8'
     );
@@ -52,7 +52,7 @@ describe('f8 CLI', () => {
 
     expect(result.skipped).toEqual(
       expect.arrayContaining([
-        join(cwd, 'f8.config.toml'),
+        join(cwd, '.f8.toml'),
         join(cwd, 'content', 'index.md')
       ])
     );
