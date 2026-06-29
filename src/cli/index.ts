@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { existsSync, mkdirSync, statSync, writeFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import { F8ConfigError, loadConfig } from '../lib/config/index.js';
@@ -11,7 +11,7 @@ Usage:
   f8 [command] [options]
 
 Commands:
-  init          Create starter f8 project files
+  init [dir]    Create starter f8 project files and optionally use an existing photo directory
   config        Validate and print the resolved configuration
   help          Show this help message
 
@@ -55,7 +55,12 @@ export async function main(
     }
 
     if (command === 'init') {
-      const result = initProject({ cwd, force: args.includes('--force') });
+      const contentDir = getInitContentDirArg(args);
+      const result = initProject({
+        cwd,
+        force: args.includes('--force'),
+        ...(contentDir === undefined ? {} : { contentDir })
+      });
       stdout(formatInitResult(result));
       return 0;
     }
@@ -76,24 +81,33 @@ export async function main(
 
 export function initProject({
   cwd,
-  force
+  force,
+  contentDir
 }: {
   cwd: string;
   force: boolean;
+  contentDir?: string;
 }): InitResult {
   const created: string[] = [];
   const skipped: string[] = [];
+  const resolvedContentDir = contentDir ?? 'content';
+  const contentRoot = resolve(cwd, resolvedContentDir);
 
-  ensureDirectory(join(cwd, 'content'), created);
+  if (contentDir === undefined) {
+    ensureDirectory(contentRoot, created);
+  } else {
+    ensureExistingDirectory(contentRoot);
+  }
+
   writeStarterFile(
     join(cwd, '.f8.toml'),
-    starterConfig,
+    createStarterConfig(resolvedContentDir),
     force,
     created,
     skipped
   );
   writeStarterFile(
-    join(cwd, 'content', 'index.md'),
+    join(contentRoot, 'index.md'),
     starterMarkdown,
     force,
     created,
@@ -108,6 +122,16 @@ function ensureDirectory(path: string, created: string[]): void {
     mkdirSync(path, { recursive: true });
     created.push(path);
   }
+}
+
+function ensureExistingDirectory(path: string): void {
+  if (!existsSync(path) || !statSync(path).isDirectory()) {
+    throw new Error(`Photo directory does not exist: ${path}`);
+  }
+}
+
+function getInitContentDirArg(args: string[]): string | undefined {
+  return args.find((arg) => !arg.startsWith('-'));
 }
 
 function writeStarterFile(
@@ -151,6 +175,17 @@ function formatError(error: unknown): string {
   }
 
   return String(error);
+}
+
+export function createStarterConfig(contentDir = 'content'): string {
+  return starterConfig.replace(
+    'contentDir = "content"',
+    () => `contentDir = ${toTomlString(contentDir)}`
+  );
+}
+
+function toTomlString(value: string): string {
+  return JSON.stringify(value);
 }
 
 export const starterConfig = `contentDir = "content"

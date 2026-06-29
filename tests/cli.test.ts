@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -42,6 +42,34 @@ describe('f8 CLI', () => {
     expect(readFileSync(join(cwd, 'content', 'index.md'), 'utf8')).toContain(
       'Welcome to f8'
     );
+  });
+
+  it('uses an existing photo directory when provided', () => {
+    const cwd = fixtureDir();
+    const photos = join(cwd, 'photos');
+    mkdirSync(photos, { recursive: true });
+
+    const result = initProject({ cwd, force: false, contentDir: 'photos' });
+
+    expect(result.created).toEqual(
+      expect.arrayContaining([join(cwd, '.f8.toml'), join(photos, 'index.md')])
+    );
+    expect(result.created).not.toContain(join(cwd, 'content'));
+    expect(readFileSync(join(cwd, '.f8.toml'), 'utf8')).toContain(
+      'contentDir = "photos"'
+    );
+  });
+
+  it('returns an error when init is given a missing photo directory', async () => {
+    const messages: string[] = [];
+
+    const exitCode = await main(['init', 'photos'], {
+      cwd: fixtureDir(),
+      stderr: (message) => messages.push(message)
+    });
+
+    expect(exitCode).toBe(1);
+    expect(messages.join('\n')).toContain('Photo directory does not exist');
   });
 
   it('does not overwrite existing starter files unless forced', () => {
