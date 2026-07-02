@@ -1,8 +1,58 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
+
+  import F8Viewer from '$lib/components/F8Viewer.svelte';
   import type { PageData } from './$types.js';
 
   let { data }: { data: PageData } = $props();
   const page = $derived(data.page);
+  let viewerOpen = $state(false);
+  let viewerIndex = $state(0);
+  let articleElement: HTMLElement | undefined = $state();
+
+  onMount(() => {
+    const article = articleElement;
+    if (article === undefined) {
+      return;
+    }
+
+    article.addEventListener('click', openViewerFromTrigger);
+    return () => {
+      article.removeEventListener('click', openViewerFromTrigger);
+    };
+  });
+
+  function openViewerFromTrigger(event: MouseEvent): void {
+    if (event.defaultPrevented || event.button !== 0 || hasModifier(event)) {
+      return;
+    }
+
+    const target = event.target;
+    if (!(target instanceof Element)) {
+      return;
+    }
+
+    const trigger = target.closest<HTMLAnchorElement>(
+      'a[data-f8-viewer-trigger]'
+    );
+    if (trigger === null) {
+      return;
+    }
+
+    const imageId = trigger.dataset.f8ImageId;
+    const nextIndex = page.images.findIndex((image) => image.id === imageId);
+    if (nextIndex === -1) {
+      return;
+    }
+
+    event.preventDefault();
+    viewerIndex = nextIndex;
+    viewerOpen = true;
+  }
+
+  function hasModifier(event: MouseEvent): boolean {
+    return event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
+  }
 </script>
 
 <svelte:head>
@@ -43,10 +93,23 @@
     {/if}
   </header>
 
-  <article class="f8-page">
+  <article bind:this={articleElement} class="f8-page">
     <!-- eslint-disable-next-line svelte/no-at-html-tags -->
     {@html page.html}
   </article>
+
+  <F8Viewer
+    images={page.images}
+    bind:open={viewerOpen}
+    bind:index={viewerIndex}
+    enableMap={page.viewer.enableMap}
+    enableMapZoom={page.viewer.enableMapZoom}
+    showMapAttribution={page.viewer.showMapAttribution}
+    enableMapMarkerLink={page.viewer.enableMapMarkerLink}
+    mapMarkerUrlTemplate={page.viewer.mapMarkerUrlTemplate}
+    enableExifOverlay={page.viewer.enableExifOverlay}
+    mapStyleUrl={page.viewer.mapStyleUrl}
+  />
 </main>
 
 <style>

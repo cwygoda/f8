@@ -10,7 +10,11 @@ import path, { dirname, extname, join, relative, resolve } from 'node:path';
 
 import { parse as parseYaml } from 'yaml';
 
-import { loadConfig, type F8Config } from '../config/index.js';
+import {
+  loadConfig,
+  type F8Config,
+  type F8ViewerConfig
+} from '../config/index.js';
 import { listMarkdownImageSources, renderMarkdown } from '../markdown/index.js';
 import { isSupportedImagePath, processImage } from '../pipeline/index.js';
 import { DEFAULT_F8_ASSET_BASE, withF8AssetUrls } from './assets.js';
@@ -52,6 +56,7 @@ export interface F8RenderedPage extends F8PageEntry {
   markdown: string;
   html: string;
   images: F8ImageMetadata[];
+  viewer: F8ViewerConfig;
   seo: F8PageSeo;
 }
 
@@ -187,6 +192,7 @@ export async function loadF8Page(
     markdown: parsed.content,
     html: rendered.html,
     images: pageImages,
+    viewer: config.viewer,
     seo: createPageSeo({
       frontmatter: parsed.frontmatter,
       slug: entry.slug,
