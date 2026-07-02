@@ -29,7 +29,7 @@ import type {
   F8Location
 } from '../types.js';
 
-export const PIPELINE_VERSION = '2.0.0';
+export const PIPELINE_VERSION = '2.0.1';
 export const SUPPORTED_IMAGE_EXTENSIONS = [
   '.jpg',
   '.jpeg',
@@ -381,8 +381,8 @@ async function parseExifRecord(
 
 function normalizeLocation(parsed: Record<string, unknown>): F8Location {
   return {
-    ...numberField(parsed, 'GPSLatitude', 'lat'),
-    ...numberField(parsed, 'GPSLongitude', 'lng')
+    ...gpsCoordinateField(parsed, 'GPSLatitude', 'GPSLatitudeRef', 'lat'),
+    ...gpsCoordinateField(parsed, 'GPSLongitude', 'GPSLongitudeRef', 'lng')
   };
 }
 
@@ -751,19 +751,63 @@ function numberField<T extends string>(
   key: string,
   target: T
 ): Partial<Record<T, number>> {
-  const value = source[key];
+  const value = numericValue(source[key]);
+  return value === undefined
+    ? {}
+    : ({ [target]: value } as Partial<Record<T, number>>);
+}
+
+function gpsCoordinateField<T extends string>(
+  source: Record<string, unknown>,
+  key: string,
+  refKey: string,
+  target: T
+): Partial<Record<T, number>> {
+  const value = gpsCoordinateValue(source[key], source[refKey]);
+  return value === undefined
+    ? {}
+    : ({ [target]: value } as Partial<Record<T, number>>);
+}
+
+function numericValue(value: unknown): number | undefined {
   if (typeof value === 'number' && Number.isFinite(value)) {
-    return { [target]: value } as Partial<Record<T, number>>;
+    return value;
   }
 
   if (typeof value === 'string') {
     const numeric = Number(value);
     if (Number.isFinite(numeric)) {
-      return { [target]: numeric } as Partial<Record<T, number>>;
+      return numeric;
     }
   }
 
-  return {};
+  return undefined;
+}
+
+function gpsCoordinateValue(value: unknown, ref: unknown): number | undefined {
+  const decimal = Array.isArray(value)
+    ? degreesMinutesSecondsToDecimal(value)
+    : numericValue(value);
+
+  if (decimal === undefined) {
+    return undefined;
+  }
+
+  const direction = toStringValue(ref)?.trim().toUpperCase();
+  if (direction === 'S' || direction === 'W') {
+    return -Math.abs(decimal);
+  }
+
+  return direction === 'N' || direction === 'E' ? Math.abs(decimal) : decimal;
+}
+
+function degreesMinutesSecondsToDecimal(value: unknown[]): number | undefined {
+  const [degrees, minutes = 0, seconds = 0] = value.map(numericValue);
+  if (degrees === undefined || minutes === undefined || seconds === undefined) {
+    return undefined;
+  }
+
+  return degrees + minutes / 60 + seconds / 3600;
 }
 
 function toStringValue(value: unknown): string | undefined {
