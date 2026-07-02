@@ -129,7 +129,7 @@ The renderer is powered by `remark`/`rehype`. It resolves Markdown image nodes t
 
 Components render responsive `picture` markup from `F8ImageMetadata`, use dominant-color placeholders, support CSS-variable theming, and include an accessible fullscreen viewer with keyboard, swipe, EXIF overlay, and lazy MapLibre preview support. Public exports include `@cwygoda/f8/svelte`, `@cwygoda/f8/components/F8Image.svelte`, `@cwygoda/f8/components/F8Gallery.svelte`, `@cwygoda/f8/components/F8Viewer.svelte`, and `@cwygoda/f8/components/image-utils`.
 
-Map previews use the optional peer dependency `maplibre-gl`. Install it in consuming apps that enable map previews; without it, the viewer gracefully reports the map preview as unavailable.
+Map previews use the optional peer dependency `maplibre-gl`. Install it in consuming apps that enable map previews and set `viewer.mapStyleUrl` (or `F8_MAP_STYLE_URL`) to a MapLibre style URL; without a style URL or MapLibre, the viewer gracefully reports the map preview as unavailable. Maps are zoomable by default (`viewer.enableMapZoom = false` opts out), attribution controls are hidden by default (`viewer.showMapAttribution = true` opts in), and the custom location marker links to Google Earth by default via configurable `viewer.mapMarkerUrlTemplate` (`viewer.enableMapMarkerLink = false` opts out).
 
 ## Static starter workflow
 

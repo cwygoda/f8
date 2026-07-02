@@ -22,6 +22,13 @@ describe('loadConfig', () => {
     expect(result.config.contentDir).toBe('content');
     expect(result.config.image.widths).toContain(1024);
     expect(result.config.viewer.enableMap).toBe(true);
+    expect(result.config.viewer.enableMapZoom).toBe(true);
+    expect(result.config.viewer.showMapAttribution).toBe(false);
+    expect(result.config.viewer.enableMapMarkerLink).toBe(true);
+    expect(result.config.viewer.mapMarkerUrlTemplate).toContain(
+      'earth.google.com'
+    );
+    expect(result.config.viewer.mapStyleUrl).toBeUndefined();
     expect(result.config.privacy.includeGpsMetadata).toBe(false);
     expect(result.config.privacy.stripOutputMetadata).toBe(true);
     expect(result.config.security.sanitizeMarkdown).toBe(true);
@@ -36,6 +43,8 @@ describe('loadConfig', () => {
 
 [viewer]
 enableMap = true
+mapStyleUrl = "https://example.com/style.json"
+mapMarkerUrlTemplate = "https://example.com/?lat={lat}&lng={lng}"
 `,
       'utf8'
     );
@@ -44,6 +53,11 @@ enableMap = true
       cwd,
       env: {
         F8_ENABLE_MAP: 'false',
+        F8_ENABLE_MAP_ZOOM: 'false',
+        F8_SHOW_MAP_ATTRIBUTION: 'true',
+        F8_ENABLE_MAP_MARKER_LINK: 'false',
+        F8_MAP_STYLE_URL: 'https://example.com/env-style.json',
+        F8_MAP_MARKER_URL_TEMPLATE: 'https://example.com/env?lat={lat}',
         F8_INCLUDE_GPS_METADATA: 'true',
         F8_ALLOW_UNPROCESSED_IMAGES: 'true'
       }
@@ -52,6 +66,15 @@ enableMap = true
     expect(result.path).toBe(join(cwd, '.f8.toml'));
     expect(result.config.contentDir).toBe('stories');
     expect(result.config.viewer.enableMap).toBe(false);
+    expect(result.config.viewer.enableMapZoom).toBe(false);
+    expect(result.config.viewer.showMapAttribution).toBe(true);
+    expect(result.config.viewer.enableMapMarkerLink).toBe(false);
+    expect(result.config.viewer.mapStyleUrl).toBe(
+      'https://example.com/env-style.json'
+    );
+    expect(result.config.viewer.mapMarkerUrlTemplate).toBe(
+      'https://example.com/env?lat={lat}'
+    );
     expect(result.config.privacy.includeGpsMetadata).toBe(true);
     expect(result.config.security.allowUnprocessedImages).toBe(true);
   });

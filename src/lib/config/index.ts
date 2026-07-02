@@ -100,12 +100,53 @@ function configFromEnv(env: NodeJS.ProcessEnv): DeepPartial<F8Config> {
     config.viewer = { ...(config.viewer ?? {}), enableMap };
   }
 
+  const enableMapZoom = parseBooleanEnv(
+    'F8_ENABLE_MAP_ZOOM',
+    env.F8_ENABLE_MAP_ZOOM
+  );
+  if (enableMapZoom !== undefined) {
+    config.viewer = { ...(config.viewer ?? {}), enableMapZoom };
+  }
+
+  const showMapAttribution = parseBooleanEnv(
+    'F8_SHOW_MAP_ATTRIBUTION',
+    env.F8_SHOW_MAP_ATTRIBUTION
+  );
+  if (showMapAttribution !== undefined) {
+    config.viewer = { ...(config.viewer ?? {}), showMapAttribution };
+  }
+
+  const enableMapMarkerLink = parseBooleanEnv(
+    'F8_ENABLE_MAP_MARKER_LINK',
+    env.F8_ENABLE_MAP_MARKER_LINK
+  );
+  if (enableMapMarkerLink !== undefined) {
+    config.viewer = { ...(config.viewer ?? {}), enableMapMarkerLink };
+  }
+
+  if (
+    env.F8_MAP_MARKER_URL_TEMPLATE !== undefined &&
+    env.F8_MAP_MARKER_URL_TEMPLATE.length > 0
+  ) {
+    config.viewer = {
+      ...(config.viewer ?? {}),
+      mapMarkerUrlTemplate: env.F8_MAP_MARKER_URL_TEMPLATE
+    };
+  }
+
   const enableExifOverlay = parseBooleanEnv(
     'F8_ENABLE_EXIF_OVERLAY',
     env.F8_ENABLE_EXIF_OVERLAY
   );
   if (enableExifOverlay !== undefined) {
     config.viewer = { ...(config.viewer ?? {}), enableExifOverlay };
+  }
+
+  if (env.F8_MAP_STYLE_URL !== undefined && env.F8_MAP_STYLE_URL.length > 0) {
+    config.viewer = {
+      ...(config.viewer ?? {}),
+      mapStyleUrl: env.F8_MAP_STYLE_URL
+    };
   }
 
   const includeGpsMetadata = parseBooleanEnv(

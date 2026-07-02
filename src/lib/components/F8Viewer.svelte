@@ -2,6 +2,7 @@
   import { onMount, tick } from 'svelte';
 
   import type { F8ImageMetadata } from '../types.js';
+  import { DEFAULT_MAP_MARKER_URL_TEMPLATE } from '../viewer-defaults.js';
   import {
     DEFAULT_IMAGE_SIZES,
     fallbackVariant,
@@ -14,7 +15,10 @@
   type MapState = 'idle' | 'loading' | 'ready' | 'unavailable';
 
   interface MapLibreModule {
-    Map: new (options: Record<string, unknown>) => { remove: () => void };
+    Map: new (options: Record<string, unknown>) => {
+      remove: () => void;
+      resize: () => void;
+    };
     Marker: new (options: Record<string, unknown>) => {
       setLngLat: (lngLat: [number, number]) => {
         addTo: (map: unknown) => void;
@@ -27,7 +31,12 @@
   export let index = 0;
   export let sizes = DEFAULT_IMAGE_SIZES;
   export let enableMap = true;
+  export let enableMapZoom = true;
+  export let showMapAttribution = false;
+  export let enableMapMarkerLink = true;
+  export let mapMarkerUrlTemplate = DEFAULT_MAP_MARKER_URL_TEMPLATE;
   export let enableExifOverlay = true;
+  export let mapStyleUrl: string | undefined = undefined;
   export let onClose: (() => void) | undefined = undefined;
   export let onIndexChange: ((index: number) => void) | undefined = undefined;
 
@@ -40,7 +49,7 @@
   let touchStartX: number | undefined;
   let mapState: MapState = 'idle';
   let mapImageId: string | undefined;
-  let mapInstance: { remove: () => void } | undefined;
+  let mapInstance: { remove: () => void; resize: () => void } | undefined;
 
   $: safeIndex = normalizeIndex(index, images.length);
   $: current = images[safeIndex];
@@ -222,6 +231,7 @@
 
     if (
       mapHost === undefined ||
+      mapStyleUrl === undefined ||
       image.location?.lat === undefined ||
       image.location.lng === undefined
     ) {
@@ -232,29 +242,29 @@
     try {
       const maplibre =
         (await import('maplibre-gl')) as unknown as MapLibreModule;
-      const style = {
-        version: 8,
-        sources: {},
-        layers: [
-          {
-            id: 'f8-map-background',
-            type: 'background',
-            paint: { 'background-color': '#1b1a17' }
-          }
-        ]
-      };
 
       mapInstance = new maplibre.Map({
         container: mapHost,
-        style,
+        style: mapStyleUrl,
         center: [image.location.lng, image.location.lat],
         zoom: 9,
-        interactive: false,
-        attributionControl: false
+        interactive: enableMapZoom,
+        scrollZoom: enableMapZoom,
+        boxZoom: enableMapZoom,
+        doubleClickZoom: enableMapZoom,
+        touchZoomRotate: enableMapZoom,
+        dragPan: enableMapZoom,
+        dragRotate: false,
+        keyboard: enableMapZoom,
+        attributionControl: showMapAttribution
       });
-      new maplibre.Marker({ color: '#c69b54' })
+      new maplibre.Marker({
+        anchor: 'center',
+        element: createMapMarkerElement(image)
+      })
         .setLngLat([image.location.lng, image.location.lat])
         .addTo(mapInstance);
+      mapInstance.resize();
       mapState = 'ready';
     } catch {
       mapState = 'unavailable';
@@ -267,6 +277,55 @@
     mapHost = undefined;
     mapState = 'idle';
     mapImageId = undefined;
+  }
+
+  function createMapMarkerElement(image: F8ImageMetadata): HTMLElement {
+    const markerUrl = mapMarkerUrl(image);
+    const marker =
+      markerUrl === undefined
+        ? document.createElement('div')
+        : document.createElement('a');
+    marker.className = 'f8-viewer__map-marker';
+
+    if (markerUrl !== undefined && marker instanceof HTMLAnchorElement) {
+      marker.href = markerUrl;
+      marker.target = '_blank';
+      marker.rel = 'noopener noreferrer';
+      marker.ariaLabel = 'Open location in Google Earth';
+      marker.title = 'Open location in Google Earth';
+    } else {
+      marker.setAttribute('aria-hidden', 'true');
+    }
+
+    const pulse = document.createElement('span');
+    pulse.className = 'f8-viewer__map-marker-pulse';
+    const core = document.createElement('span');
+    core.className = 'f8-viewer__map-marker-core';
+    const glint = document.createElement('span');
+    glint.className = 'f8-viewer__map-marker-glint';
+
+    marker.append(pulse, core, glint);
+    return marker;
+  }
+
+  function mapMarkerUrl(image: F8ImageMetadata): string | undefined {
+    if (
+      !enableMapMarkerLink ||
+      image.location?.lat === undefined ||
+      image.location.lng === undefined
+    ) {
+      return undefined;
+    }
+
+    return mapMarkerUrlTemplate
+      .replaceAll('{lat}', formatCoordinate(image.location.lat))
+      .replaceAll('{latitude}', formatCoordinate(image.location.lat))
+      .replaceAll('{lng}', formatCoordinate(image.location.lng))
+      .replaceAll('{longitude}', formatCoordinate(image.location.lng));
+  }
+
+  function formatCoordinate(value: number): string {
+    return value.toFixed(6).replace(/0+$/, '').replace(/\.$/, '');
   }
 
   function normalizeIndex(value: number, length: number): number {
@@ -658,6 +717,106 @@
     font-size: 0.85rem;
   }
 
+  .f8-viewer__map :global(.maplibregl-map),
+  .f8-viewer__map :global(.maplibregl-canvas-container) {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  .f8-viewer__map :global(.maplibregl-canvas) {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .f8-viewer__map :global(.maplibregl-control-container) {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .f8-viewer__map :global(.maplibregl-ctrl-bottom-right) {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+  }
+
+  .f8-viewer__map :global(.maplibregl-ctrl),
+  .f8-viewer__map :global(.maplibregl-ctrl a) {
+    pointer-events: auto;
+  }
+
+  .f8-viewer__map :global(.maplibregl-ctrl-attrib) {
+    padding: 0.15rem 0.35rem;
+    color: #111;
+    background: rgb(255 255 255 / 72%);
+    font-family: var(--f8-font-sans, system-ui, sans-serif);
+    font-size: 0.62rem;
+    line-height: 1.3;
+  }
+
+  .f8-viewer__map :global(.maplibregl-ctrl-attrib a) {
+    color: inherit;
+  }
+
+  .f8-viewer__map :global(.maplibregl-marker) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    will-change: transform;
+  }
+
+  .f8-viewer__map :global(.f8-viewer__map-marker) {
+    position: relative;
+    display: block;
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 999px;
+    color: inherit;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .f8-viewer__map :global(.f8-viewer__map-marker:focus-visible) {
+    outline: 2px solid #fff7e7;
+    outline-offset: 0.35rem;
+  }
+
+  .f8-viewer__map :global(.f8-viewer__map-marker-pulse),
+  .f8-viewer__map :global(.f8-viewer__map-marker-core),
+  .f8-viewer__map :global(.f8-viewer__map-marker-glint) {
+    position: absolute;
+    inset: 50% auto auto 50%;
+    border-radius: 999px;
+    translate: -50% -50%;
+  }
+
+  .f8-viewer__map :global(.f8-viewer__map-marker-pulse) {
+    width: 2.2rem;
+    height: 2.2rem;
+    background: color-mix(in srgb, var(--f8-accent), transparent 72%);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--f8-accent), white 20%);
+    animation: f8-map-marker-pulse 1.9s ease-out infinite;
+  }
+
+  .f8-viewer__map :global(.f8-viewer__map-marker-core) {
+    width: 0.8rem;
+    height: 0.8rem;
+    background: var(--f8-accent);
+    box-shadow:
+      0 0 0 0.24rem rgb(18 16 14 / 82%),
+      0 0 0 0.34rem color-mix(in srgb, var(--f8-accent), white 18%),
+      0 0.45rem 1rem rgb(0 0 0 / 45%);
+  }
+
+  .f8-viewer__map :global(.f8-viewer__map-marker-glint) {
+    width: 0.22rem;
+    height: 0.22rem;
+    margin: -0.13rem 0 0 0.13rem;
+    background: #fff7e7;
+  }
+
   @keyframes f8-viewer-in {
     from {
       opacity: 0;
@@ -669,6 +828,18 @@
     from {
       opacity: 0;
       transform: translateY(0.5rem);
+    }
+  }
+
+  @keyframes f8-map-marker-pulse {
+    from {
+      opacity: 0.85;
+      scale: 0.58;
+    }
+
+    to {
+      opacity: 0;
+      scale: 1.55;
     }
   }
 

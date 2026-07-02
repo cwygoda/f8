@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { F8ImageMetadata } from '../types.js';
+  import { DEFAULT_MAP_MARKER_URL_TEMPLATE } from '../viewer-defaults.js';
   import F8Image from './F8Image.svelte';
   import F8Viewer from './F8Viewer.svelte';
   import { DEFAULT_IMAGE_SIZES } from './image-utils.js';
@@ -12,7 +13,12 @@
   export let showCaptions = true;
   export let enableViewer = true;
   export let enableMap = true;
+  export let enableMapZoom = true;
+  export let showMapAttribution = false;
+  export let enableMapMarkerLink = true;
+  export let mapMarkerUrlTemplate = DEFAULT_MAP_MARKER_URL_TEMPLATE;
   export let enableExifOverlay = true;
+  export let mapStyleUrl: string | undefined = undefined;
   export let ariaLabel: string | undefined = undefined;
 
   let viewerOpen = false;
@@ -65,7 +71,12 @@
     bind:index={viewerIndex}
     {sizes}
     {enableMap}
+    {enableMapZoom}
+    {showMapAttribution}
+    {enableMapMarkerLink}
+    {mapMarkerUrlTemplate}
     {enableExifOverlay}
+    {mapStyleUrl}
   />
 {/if}
 

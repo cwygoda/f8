@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { DEFAULT_MAP_MARKER_URL_TEMPLATE } from '../viewer-defaults.js';
+
 export const DEFAULT_IMAGE_WIDTHS = [480, 768, 1024, 1440, 1920, 2560] as const;
 export const DEFAULT_IMAGE_FORMATS = ['avif', 'webp', 'jpeg'] as const;
 
@@ -42,7 +44,15 @@ export const f8GalleryConfigSchema = z
 export const f8ViewerConfigSchema = z
   .object({
     enableMap: z.boolean().default(true),
-    enableExifOverlay: z.boolean().default(true)
+    enableMapZoom: z.boolean().default(true),
+    showMapAttribution: z.boolean().default(false),
+    enableMapMarkerLink: z.boolean().default(true),
+    mapMarkerUrlTemplate: z
+      .string()
+      .min(1)
+      .default(DEFAULT_MAP_MARKER_URL_TEMPLATE),
+    enableExifOverlay: z.boolean().default(true),
+    mapStyleUrl: z.string().url().optional()
   })
   .prefault({});
 
