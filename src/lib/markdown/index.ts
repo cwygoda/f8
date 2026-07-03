@@ -333,7 +333,7 @@ function galleryElement(
   return element(
     'section',
     {
-      className: ['f8-gallery'],
+      className: ['f8-gallery', 'f8-gallery--justified'],
       'data-f8-block': 'gallery',
       role: 'group',
       ariaLabel: `Image gallery with ${images.length} images`
@@ -352,20 +352,15 @@ function galleryItemElement(
   image: F8MarkdownImageNode,
   options: F8MarkdownRenderOptions
 ): HastElement {
-  const children: HastElementContent[] = [imageLinkElement(image, options)];
-  const caption = captionElement(imageCaption(image), 'f8-gallery__caption');
-  if (caption !== undefined) {
-    children.push(caption);
-  }
-
   return element(
     'figure',
     {
       className: ['f8-gallery__item'],
       role: 'listitem',
+      ...galleryItemStyleProperties(image),
       ...imageIdProperties(image.metadata)
     },
-    children
+    [imageLinkElement(image, options)]
   );
 }
 
@@ -567,6 +562,42 @@ function imageIdProperties(
   metadata: F8ImageMetadata | undefined
 ): HastProperties {
   return metadata === undefined ? {} : { 'data-f8-image-id': metadata.id };
+}
+
+function galleryItemStyleProperties(
+  image: F8MarkdownImageNode
+): HastProperties {
+  const aspectRatio = imageAspectRatio(image);
+
+  return aspectRatio === undefined
+    ? {}
+    : { style: `--f8-image-aspect-ratio: ${aspectRatio}` };
+}
+
+function imageAspectRatio(image: F8MarkdownImageNode): number | undefined {
+  const ratio = image.metadata?.aspectRatio;
+  if (ratio !== undefined && Number.isFinite(ratio) && ratio > 0) {
+    return roundAspectRatio(ratio);
+  }
+
+  const width = image.metadata?.width;
+  const height = image.metadata?.height;
+  if (
+    width !== undefined &&
+    height !== undefined &&
+    Number.isFinite(width) &&
+    Number.isFinite(height) &&
+    width > 0 &&
+    height > 0
+  ) {
+    return roundAspectRatio(width / height);
+  }
+
+  return undefined;
+}
+
+function roundAspectRatio(value: number): number {
+  return Math.round(value * 1000) / 1000;
 }
 
 function element(

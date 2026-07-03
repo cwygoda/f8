@@ -277,16 +277,46 @@
       calc((740px - min(1180px, calc(100vw - clamp(2rem, 8vw, 8rem)))) / 2);
   }
 
-  .f8-page :global(.f8-gallery__grid) {
+  .f8-page :global(.f8-gallery:not(.f8-gallery--justified) .f8-gallery__grid) {
     columns: 1;
     column-gap: var(--f8-gap);
   }
 
-  .f8-page :global(.f8-gallery__item) {
+  .f8-page :global(.f8-gallery:not(.f8-gallery--justified) .f8-gallery__item) {
     display: inline-block;
     width: 100%;
     margin: 0 0 var(--f8-gap);
     break-inside: avoid;
+  }
+
+  .f8-page :global(.f8-gallery--justified) {
+    --f8-gallery-row-height: clamp(9rem, 18vw, 15rem);
+    --f8-gallery-gap: clamp(0.35rem, 1vw, 0.75rem);
+  }
+
+  .f8-page :global(.f8-gallery--justified .f8-gallery__grid) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: var(--f8-gallery-gap);
+  }
+
+  .f8-page :global(.f8-gallery--justified .f8-gallery__grid::after) {
+    content: '';
+    flex-grow: 999999;
+  }
+
+  .f8-page :global(.f8-gallery--justified .f8-gallery__item) {
+    flex-basis: calc(
+      var(--f8-gallery-row-height) * var(--f8-image-aspect-ratio, 1.5)
+    );
+    flex-grow: calc(var(--f8-image-aspect-ratio, 1.5) * 100);
+    height: var(--f8-gallery-row-height);
+    min-width: min(
+      100%,
+      calc(var(--f8-gallery-row-height) * var(--f8-image-aspect-ratio, 1.5))
+    );
+    margin: 0;
   }
 
   .f8-page :global(.f8-image__trigger) {
@@ -309,6 +339,16 @@
     height: auto;
   }
 
+  .f8-page :global(.f8-gallery--justified .f8-image__trigger),
+  .f8-page :global(.f8-gallery--justified .f8-image),
+  .f8-page :global(.f8-gallery--justified .f8-image img) {
+    height: 100%;
+  }
+
+  .f8-page :global(.f8-gallery--justified .f8-image img) {
+    object-fit: cover;
+  }
+
   .f8-page :global(.f8-figure__caption),
   .f8-page :global(.f8-gallery__caption) {
     max-width: 42rem;
@@ -329,13 +369,15 @@
   }
 
   @media (min-width: 44rem) {
-    .f8-page :global(.f8-gallery__grid) {
+    .f8-page
+      :global(.f8-gallery:not(.f8-gallery--justified) .f8-gallery__grid) {
       columns: 2;
     }
   }
 
   @media (min-width: 70rem) {
-    .f8-page :global(.f8-gallery__grid) {
+    .f8-page
+      :global(.f8-gallery:not(.f8-gallery--justified) .f8-gallery__grid) {
       columns: 3;
     }
   }

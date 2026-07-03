@@ -101,10 +101,13 @@ describe('markdown renderer', () => {
       }
     );
 
+    expect(result.html).toContain('class="f8-gallery f8-gallery--justified"');
     expect(result.html).toContain('data-f8-block="gallery"');
     expect(result.html).toContain('role="group"');
     expect(result.html).toContain('aria-label="Image gallery with 3 images"');
+    expect(result.html).toContain('style="--f8-image-aspect-ratio: 1.5"');
     expect(result.html.match(/role="listitem"/g)).toHaveLength(3);
+    expect(result.html).not.toContain('f8-gallery__caption');
   });
 
   it('preserves natural prose and image ordering while separating blank-line images', () => {
