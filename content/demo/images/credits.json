@@ -1,0 +1,183 @@
+[
+  {
+    "file": "Overview of Mikulov from Svatý Kopeček 2020 pano.jpg",
+    "slug": "01-mikulov-panorama.jpg",
+    "title": "Mikulov from Svatý Kopeček",
+    "orientation": "panoramic",
+    "gps": [48.8053, 16.6378],
+    "credit": "Tadeáš Bednarz",
+    "license": "CC BY-SA 4.0"
+  },
+  {
+    "file": "Lago Pranda, Cerreto Laghi (Italia).jpg",
+    "slug": "02-lago-pranda-panorama.jpg",
+    "title": "Lago Pranda, Cerreto Laghi",
+    "orientation": "panoramic",
+    "gps": [44.303, 10.226],
+    "credit": "Emanuele Paolini",
+    "license": "CC BY-SA 4.0"
+  },
+  {
+    "file": "Champ de tournesols à Étoile-sur-Rhône, Drôme (9653173207).jpg",
+    "slug": "03-sunflower-field-panorama.jpg",
+    "title": "Sunflower field in Étoile-sur-Rhône",
+    "orientation": "panoramic",
+    "gps": [44.834, 4.895],
+    "credit": "Nicolas Buffler",
+    "license": "CC BY 2.0"
+  },
+  {
+    "file": "Wyspa św. Jerzego w Peraście 02.jpg",
+    "slug": "04-saint-george-perast.jpg",
+    "title": "St. George island, Perast",
+    "orientation": "landscape",
+    "gps": [42.486, 18.69],
+    "credit": "Wikimedia Commons contributor",
+    "license": "Wikimedia Commons free license"
+  },
+  {
+    "file": "Flamencos andinos (Phoenicoparrus andinus), Laguna Hedionda, Bolivia, 2016-02-03, DD 61.JPG",
+    "slug": "05-andean-flamingos-bolivia.jpg",
+    "title": "Andean flamingos, Laguna Hedionda",
+    "orientation": "landscape",
+    "gps": [-21.568, -68.05],
+    "credit": "Diego Delso",
+    "license": "CC BY-SA 4.0"
+  },
+  {
+    "file": "Salineras de Maras, Maras, Perú, 2015-07-30, DD 12.JPG",
+    "slug": "06-salineras-de-maras.jpg",
+    "title": "Salineras de Maras, Peru",
+    "orientation": "landscape",
+    "gps": [-13.303, -72.155],
+    "credit": "Diego Delso",
+    "license": "CC BY-SA 4.0"
+  },
+  {
+    "file": "Sillustani, Perú, 2015-08-01, DD 108-112.JPG",
+    "slug": "07-sillustani-peru.jpg",
+    "title": "Sillustani, Peru",
+    "orientation": "landscape",
+    "gps": [-15.723, -70.158],
+    "credit": "Diego Delso",
+    "license": "CC BY-SA 4.0"
+  },
+  {
+    "file": "Landscape Arnisee-region.JPG",
+    "slug": "08-arnisee-region.jpg",
+    "title": "Arnisee region landscape",
+    "orientation": "landscape",
+    "credit": "Wikimedia Commons contributor",
+    "license": "Wikimedia Commons free license"
+  },
+  {
+    "file": "Icelandic Landscape near Neskaupstaður July 2014.JPG",
+    "slug": "09-icelandic-landscape.jpg",
+    "title": "Landscape near Neskaupstaður",
+    "orientation": "landscape",
+    "gps": [65.148, -13.74],
+    "credit": "Wikimedia Commons contributor",
+    "license": "Wikimedia Commons free license"
+  },
+  {
+    "file": "Swedish landscape near Björnlunda (by Pudelek) 01.jpg",
+    "slug": "10-swedish-landscape.jpg",
+    "title": "Swedish landscape near Björnlunda",
+    "orientation": "landscape",
+    "credit": "Pudelek",
+    "license": "Wikimedia Commons free license"
+  },
+  {
+    "file": "Large cloud over Mexican landscape.jpg",
+    "slug": "11-mexican-cloud-landscape.jpg",
+    "title": "Large cloud over Mexican landscape",
+    "orientation": "landscape",
+    "credit": "Wikimedia Commons contributor",
+    "license": "Wikimedia Commons free license"
+  },
+  {
+    "file": "HUN-2015-Budapest-Hungarian Parliament (Budapest) 2015-02.jpg",
+    "slug": "12-budapest-parliament.jpg",
+    "title": "Hungarian Parliament, Budapest",
+    "orientation": "landscape",
+    "gps": [47.507, 19.045],
+    "credit": "Wikimedia Commons contributor",
+    "license": "Wikimedia Commons free license"
+  },
+  {
+    "file": "Innenhafen Duisburg Blaue Stunde 2014.jpg",
+    "slug": "13-duisburg-blue-hour.jpg",
+    "title": "Duisburg Inner Harbour at blue hour",
+    "orientation": "landscape",
+    "credit": "Wikimedia Commons contributor",
+    "license": "Wikimedia Commons free license"
+  },
+  {
+    "file": "Teatro Principal, Puebla, México, 2013-10-11, DD 02.JPG",
+    "slug": "14-teatro-principal-puebla.jpg",
+    "title": "Teatro Principal, Puebla",
+    "orientation": "landscape",
+    "gps": [19.043, -98.194],
+    "credit": "Diego Delso",
+    "license": "CC BY-SA 4.0"
+  },
+  {
+    "file": "Asiento de suegra (Echinocactus grusonii), Jardín Botánico, Múnich, Alemania, 2013-09-08, DD 02.JPG",
+    "slug": "15-echinocactus-munich.jpg",
+    "title": "Echinocactus at Munich Botanical Garden",
+    "orientation": "portrait",
+    "gps": [48.164, 11.499],
+    "credit": "Diego Delso",
+    "license": "CC BY-SA 4.0"
+  },
+  {
+    "file": "Iglesia de Cristo, Windhoek, Namibia, 2018-08-04, DD 02.jpg",
+    "slug": "16-christuskirche-windhoek.jpg",
+    "title": "Christuskirche, Windhoek",
+    "orientation": "portrait",
+    "gps": [-22.567, 17.087],
+    "credit": "Diego Delso",
+    "license": "CC BY-SA 4.0"
+  },
+  {
+    "file": "Santuario de Las Lajas, Ipiales, Colombia, 2015-07-21, DD 01.JPG",
+    "slug": "17-las-lajas-sanctuary.jpg",
+    "title": "Las Lajas Sanctuary, Colombia",
+    "orientation": "portrait",
+    "gps": [0.805, -77.586],
+    "credit": "Diego Delso",
+    "license": "CC BY-SA 4.0"
+  },
+  {
+    "file": "Eucomis kuiflelie. 07-06-2023. (d.j.b).jpg",
+    "slug": "18-eucomis-flower.jpg",
+    "title": "Eucomis flower",
+    "orientation": "portrait",
+    "credit": "Wikimedia Commons contributor",
+    "license": "Wikimedia Commons free license"
+  },
+  {
+    "file": "Bessen van een Mahonia aquifolium. 17-08-2025. (actm.) 01.jpg",
+    "slug": "19-mahonia-berries.jpg",
+    "title": "Mahonia aquifolium berries",
+    "orientation": "portrait",
+    "credit": "Wikimedia Commons contributor",
+    "license": "Wikimedia Commons free license"
+  },
+  {
+    "file": "Calathea warscewiczii - Wilhelma.jpg",
+    "slug": "20-calathea-wilhelma.jpg",
+    "title": "Calathea warscewiczii",
+    "orientation": "portrait",
+    "credit": "Wikimedia Commons contributor",
+    "license": "Wikimedia Commons free license"
+  },
+  {
+    "file": "Alcea rosea 2025 G1.jpg",
+    "slug": "21-alcea-rosea.jpg",
+    "title": "Alcea rosea",
+    "orientation": "portrait",
+    "credit": "Wikimedia Commons contributor",
+    "license": "Wikimedia Commons free license"
+  }
+]
