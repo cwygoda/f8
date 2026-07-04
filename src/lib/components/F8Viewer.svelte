@@ -287,7 +287,10 @@
         : document.createElement('a');
     marker.className = 'f8-viewer__map-marker';
 
-    if (markerUrl !== undefined && marker instanceof HTMLAnchorElement) {
+    if (
+      markerUrl !== undefined &&
+      marker instanceof globalThis.HTMLAnchorElement
+    ) {
       marker.href = markerUrl;
       marker.target = '_blank';
       marker.rel = 'noopener noreferrer';
@@ -491,15 +494,17 @@
 
 <style>
   :global(:where(.f8-theme, .f8-gallery, .f8-viewer, .f8-image-frame)) {
-    --f8-bg: light-dark(#fbf8f1, #11100e);
-    --f8-fg: light-dark(#181510, #f8f2e8);
-    --f8-muted: light-dark(#6b6256, #c9bfae);
-    --f8-border: light-dark(rgb(24 21 16 / 14%), rgb(248 242 232 / 18%));
-    --f8-accent: #c69b54;
-    --f8-overlay-bg: light-dark(rgb(251 248 241 / 88%), rgb(17 16 14 / 84%));
-    --f8-shadow: 0 24px 80px rgb(0 0 0 / 28%);
-    --f8-radius: 18px;
-    --f8-gap: clamp(0.75rem, 2vw, 1.5rem);
+    --f8-bg: light-dark(#f3f0e8, #171a17);
+    --f8-surface: light-dark(#ebe7dc, #20241f);
+    --f8-fg: light-dark(#252722, #ece8df);
+    --f8-muted: light-dark(#6b7168, #aeb6aa);
+    --f8-border: light-dark(rgb(37 39 34 / 13%), rgb(236 232 223 / 14%));
+    --f8-accent: light-dark(#52685d, #9aad9f);
+    --f8-accent-2: light-dark(#a66f53, #c29174);
+    --f8-overlay-bg: light-dark(rgb(243 240 232 / 88%), rgb(23 26 23 / 90%));
+    --f8-shadow: 0 18px 54px rgb(70 64 49 / 10%);
+    --f8-radius: 0.9rem;
+    --f8-gap: clamp(0.75rem, 1.5vw, 1.15rem);
     color-scheme: light dark;
   }
 
@@ -551,7 +556,7 @@
     place-items: center;
     min-width: 2.75rem;
     min-height: 2.75rem;
-    color: #fff8ed;
+    color: #eef1ea;
     font: inherit;
     font-size: 1.4rem;
     background: rgb(255 255 255 / 10%);
@@ -564,7 +569,7 @@
   .f8-viewer__button--active,
   .f8-viewer__button:hover,
   .f8-viewer__nav:hover {
-    background: rgb(198 155 84 / 42%);
+    background: color-mix(in srgb, var(--f8-accent), transparent 58%);
   }
 
   .f8-viewer__button:focus-visible,
@@ -615,10 +620,10 @@
     flex-wrap: wrap;
     gap: 0.35rem 0.75rem;
     justify-content: center;
-    color: #ded3c1;
+    color: #cfd6cc;
     font-family: var(
       --f8-font-sans,
-      Inter,
+      'Noto Sans Variable',
       ui-sans-serif,
       system-ui,
       sans-serif
@@ -629,7 +634,7 @@
   }
 
   .f8-viewer__caption strong {
-    color: #fff8ed;
+    color: #eef1ea;
   }
 
   .f8-viewer__overlay {
@@ -667,7 +672,7 @@
     margin: 1rem 0 0;
     font-family: var(
       --f8-font-sans,
-      Inter,
+      'Noto Sans Variable',
       ui-sans-serif,
       system-ui,
       sans-serif
@@ -698,7 +703,7 @@
     min-height: 10rem;
     margin-top: 1rem;
     overflow: hidden;
-    background: #1b1a17;
+    background: #1a1f1a;
     border: 1px solid var(--f8-border);
     border-radius: calc(var(--f8-radius) * 0.75);
   }
@@ -712,7 +717,7 @@
     position: absolute;
     inset: auto 0 0;
     padding: 0.65rem 0.8rem;
-    color: #efe6d7;
+    color: #ece8df;
     background: rgb(0 0 0 / 56%);
     font-size: 0.85rem;
   }
@@ -779,7 +784,7 @@
   }
 
   .f8-viewer__map :global(.f8-viewer__map-marker:focus-visible) {
-    outline: 2px solid #fff7e7;
+    outline: 2px solid #ece8df;
     outline-offset: 0.35rem;
   }
 
@@ -814,7 +819,7 @@
     width: 0.22rem;
     height: 0.22rem;
     margin: -0.13rem 0 0 0.13rem;
-    background: #fff7e7;
+    background: #ece8df;
   }
 
   @keyframes f8-viewer-in {

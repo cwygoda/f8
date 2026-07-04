@@ -98,15 +98,17 @@
 
 <style>
   :global(:where(.f8-theme, .f8-gallery, .f8-viewer, .f8-image-frame)) {
-    --f8-bg: light-dark(#fbf8f1, #11100e);
-    --f8-fg: light-dark(#181510, #f8f2e8);
-    --f8-muted: light-dark(#6b6256, #c9bfae);
-    --f8-border: light-dark(rgb(24 21 16 / 14%), rgb(248 242 232 / 18%));
-    --f8-accent: #c69b54;
-    --f8-overlay-bg: light-dark(rgb(251 248 241 / 88%), rgb(17 16 14 / 84%));
-    --f8-shadow: 0 24px 80px rgb(0 0 0 / 28%);
-    --f8-radius: 18px;
-    --f8-gap: clamp(0.75rem, 2vw, 1.5rem);
+    --f8-bg: light-dark(#f3f0e8, #171a17);
+    --f8-surface: light-dark(#ebe7dc, #20241f);
+    --f8-fg: light-dark(#252722, #ece8df);
+    --f8-muted: light-dark(#6b7168, #aeb6aa);
+    --f8-border: light-dark(rgb(37 39 34 / 13%), rgb(236 232 223 / 14%));
+    --f8-accent: light-dark(#52685d, #9aad9f);
+    --f8-accent-2: light-dark(#a66f53, #c29174);
+    --f8-overlay-bg: light-dark(rgb(243 240 232 / 88%), rgb(23 26 23 / 90%));
+    --f8-shadow: 0 18px 54px rgb(70 64 49 / 10%);
+    --f8-radius: 0.9rem;
+    --f8-gap: clamp(0.75rem, 1.5vw, 1.15rem);
     color-scheme: light dark;
   }
 
@@ -170,7 +172,7 @@
     color: var(--f8-muted);
     font-family: var(
       --f8-font-sans,
-      Inter,
+      'Noto Sans Variable',
       ui-sans-serif,
       system-ui,
       sans-serif

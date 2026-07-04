@@ -1,0 +1,477 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/typography';
+
+@font-face {
+  font-family: 'Noto Sans Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  font-stretch: 62.5% 100%;
+  src: url('@fontsource-variable/noto-sans/files/noto-sans-latin-standard-normal.woff2')
+    format('woff2-variations');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Noto Sans Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  font-stretch: 62.5% 100%;
+  src: url('@fontsource-variable/noto-sans/files/noto-sans-latin-ext-standard-normal.woff2')
+    format('woff2-variations');
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+    U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB,
+    U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@theme {
+  --font-sans: 'Noto Sans Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono:
+    'SFMono-Regular', 'SF Mono', Consolas, 'Liberation Mono', monospace;
+
+  --color-f8-paper: var(--f8-bg);
+  --color-f8-surface: var(--f8-surface);
+  --color-f8-ink: var(--f8-fg);
+  --color-f8-muted: var(--f8-muted);
+  --color-f8-line: var(--f8-border);
+  --color-f8-pine: var(--f8-accent);
+  --color-f8-clay: var(--f8-accent-2);
+
+  --radius-f8: var(--f8-radius);
+  --shadow-f8-soft: var(--f8-shadow);
+}
+
+@layer base {
+  :root {
+    color-scheme: light dark;
+    --f8-bg: #f3f0e8;
+    --f8-surface: #ebe7dc;
+    --f8-fg: #252722;
+    --f8-muted: #6b7168;
+    --f8-border: rgb(37 39 34 / 13%);
+    --f8-accent: #52685d;
+    --f8-accent-2: #a66f53;
+    --f8-overlay-bg: rgb(243 240 232 / 88%);
+    --f8-shadow: 0 18px 54px rgb(70 64 49 / 10%);
+    --f8-radius: 0.9rem;
+    --f8-gap: clamp(0.75rem, 1.5vw, 1.15rem);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --f8-bg: #171a17;
+      --f8-surface: #20241f;
+      --f8-fg: #ece8df;
+      --f8-muted: #aeb6aa;
+      --f8-border: rgb(236 232 223 / 14%);
+      --f8-accent: #9aad9f;
+      --f8-accent-2: #c29174;
+      --f8-overlay-bg: rgb(23 26 23 / 90%);
+      --f8-shadow: 0 22px 66px rgb(0 0 0 / 30%);
+    }
+  }
+
+  html {
+    background: var(--f8-bg);
+  }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+    color: var(--f8-fg);
+    background:
+      linear-gradient(135deg, rgb(82 104 93 / 7%), transparent 24rem),
+      var(--f8-bg);
+    font-family: var(--font-sans);
+    font-feature-settings:
+      'kern' 1,
+      'palt' 1;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    color: var(--f8-bg);
+    background: var(--f8-accent);
+  }
+}
+
+@layer components {
+  .site-shell[data-theme='light'] {
+    color-scheme: light;
+    --f8-bg: #f3f0e8;
+    --f8-surface: #ebe7dc;
+    --f8-fg: #252722;
+    --f8-muted: #6b7168;
+    --f8-border: rgb(37 39 34 / 13%);
+    --f8-accent: #52685d;
+    --f8-accent-2: #a66f53;
+    --f8-overlay-bg: rgb(243 240 232 / 88%);
+    --f8-shadow: 0 18px 54px rgb(70 64 49 / 10%);
+  }
+
+  .site-shell[data-theme='dark'] {
+    color-scheme: dark;
+    --f8-bg: #171a17;
+    --f8-surface: #20241f;
+    --f8-fg: #ece8df;
+    --f8-muted: #aeb6aa;
+    --f8-border: rgb(236 232 223 / 14%);
+    --f8-accent: #9aad9f;
+    --f8-accent-2: #c29174;
+    --f8-overlay-bg: rgb(23 26 23 / 90%);
+    --f8-shadow: 0 22px 66px rgb(0 0 0 / 30%);
+  }
+
+  .f8-shell,
+  .site-shell {
+    min-height: 100svh;
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--f8-surface), transparent 55%),
+        transparent 36rem
+      ),
+      var(--f8-bg);
+    color: var(--f8-fg);
+  }
+
+  .f8-container {
+    width: min(100% - clamp(3rem, 8vw, 8rem), 80rem);
+    margin-inline: auto;
+  }
+
+  .f8-measure {
+    max-width: 44rem;
+    margin-inline: auto;
+  }
+
+  .f8-section {
+    padding-block: clamp(4rem, 10vw, 9rem);
+  }
+
+  .f8-divider {
+    width: clamp(3.5rem, 8vw, 6rem);
+    height: 1px;
+    background: var(--f8-accent);
+    opacity: 0.65;
+  }
+
+  .f8-eyebrow {
+    color: var(--f8-accent);
+    font-size: 0.75rem;
+    font-weight: 650;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+  }
+
+  .f8-display {
+    max-width: 13ch;
+    font-size: clamp(3rem, 9vw, 8rem);
+    font-weight: 500;
+    line-height: 0.95;
+    letter-spacing: -0.075em;
+    text-wrap: balance;
+  }
+
+  .f8-dek {
+    max-width: 42rem;
+    color: var(--f8-muted);
+    font-size: clamp(1.08rem, 2vw, 1.25rem);
+    line-height: 1.75;
+    text-wrap: pretty;
+  }
+
+  .f8-card {
+    border: 1px solid var(--f8-border);
+    border-radius: var(--f8-radius);
+    background: color-mix(in srgb, var(--f8-surface), transparent 18%);
+    box-shadow: var(--f8-shadow);
+  }
+
+  .f8-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding-inline: 1.1rem;
+    border: 1px solid var(--f8-border);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--f8-surface), transparent 18%);
+    color: var(--f8-fg);
+    font-size: 0.88rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+  }
+
+  .f8-button:hover {
+    border-color: color-mix(in srgb, var(--f8-accent), transparent 40%);
+    color: var(--f8-accent);
+  }
+
+  .site-hero {
+    position: relative;
+  }
+
+  .site-hero::before {
+    content: '';
+    display: block;
+    width: clamp(3.5rem, 8vw, 6rem);
+    height: 1px;
+    margin-bottom: clamp(2rem, 5vw, 4.5rem);
+    background: var(--f8-accent);
+    opacity: 0.65;
+  }
+
+  .prose-f8 {
+    --tw-prose-body: var(--f8-fg);
+    --tw-prose-headings: var(--f8-fg);
+    --tw-prose-lead: var(--f8-muted);
+    --tw-prose-links: var(--f8-accent);
+    --tw-prose-bold: var(--f8-fg);
+    --tw-prose-counters: var(--f8-muted);
+    --tw-prose-bullets: var(--f8-accent);
+    --tw-prose-hr: var(--f8-border);
+    --tw-prose-quotes: var(--f8-fg);
+    --tw-prose-quote-borders: var(--f8-accent);
+    --tw-prose-captions: var(--f8-muted);
+    --tw-prose-code: var(--f8-fg);
+    --tw-prose-pre-code: var(--f8-fg);
+    --tw-prose-pre-bg: var(--f8-surface);
+    --tw-prose-th-borders: var(--f8-border);
+    --tw-prose-td-borders: var(--f8-border);
+    --tw-prose-invert-body: var(--f8-fg);
+    --tw-prose-invert-headings: var(--f8-fg);
+    --tw-prose-invert-lead: var(--f8-muted);
+    --tw-prose-invert-links: var(--f8-accent);
+    --tw-prose-invert-bold: var(--f8-fg);
+    --tw-prose-invert-counters: var(--f8-muted);
+    --tw-prose-invert-bullets: var(--f8-accent);
+    --tw-prose-invert-hr: var(--f8-border);
+    --tw-prose-invert-quotes: var(--f8-fg);
+    --tw-prose-invert-quote-borders: var(--f8-accent);
+    --tw-prose-invert-captions: var(--f8-muted);
+    --tw-prose-invert-code: var(--f8-fg);
+    --tw-prose-invert-pre-code: var(--f8-fg);
+    --tw-prose-invert-pre-bg: var(--f8-surface);
+    --tw-prose-invert-th-borders: var(--f8-border);
+    --tw-prose-invert-td-borders: var(--f8-border);
+  }
+
+  .f8-page {
+    max-width: 44rem;
+    margin-inline: auto;
+    letter-spacing: -0.006em;
+  }
+
+  .f8-page :where(h1):not(:where(.not-prose, .not-prose *)) {
+    display: none;
+  }
+
+  .f8-page :where(h2, h3):not(:where(.not-prose, .not-prose *)) {
+    letter-spacing: -0.045em;
+    text-wrap: balance;
+  }
+
+  .f8-page :where(p, li):not(:where(.not-prose, .not-prose *)) {
+    text-wrap: pretty;
+  }
+
+  .f8-page :where(a):not(:where(.not-prose, .not-prose *)) {
+    text-decoration-thickness: 0.06em;
+    text-underline-offset: 0.22em;
+  }
+
+  .f8-page :where(code):not(:where(pre code, .not-prose, .not-prose *)) {
+    border: 1px solid var(--f8-border);
+    border-radius: 0.35rem;
+    padding: 0.1rem 0.32rem;
+    background: color-mix(in srgb, var(--f8-surface), transparent 22%);
+    font-weight: 500;
+  }
+
+  .f8-page :where(code):not(:where(pre code, .not-prose, .not-prose *))::before,
+  .f8-page :where(code):not(:where(pre code, .not-prose, .not-prose *))::after {
+    content: none;
+  }
+
+  .f8-page :where(pre):not(:where(.not-prose, .not-prose *)) {
+    border: 1px solid var(--f8-border);
+    border-radius: var(--f8-radius);
+    box-shadow: none;
+  }
+
+  .f8-page :where(blockquote):not(:where(.not-prose, .not-prose *)) {
+    border-inline-start-width: 1px;
+    font-style: normal;
+  }
+
+  .f8-page .f8-figure,
+  .f8-page .f8-gallery {
+    width: min(1120px, calc(100vw - clamp(2rem, 10vw, 9rem)));
+    margin-block: clamp(3.25rem, 9vw, 7rem);
+    margin-inline: calc(
+      (44rem - min(1120px, calc(100vw - clamp(2rem, 10vw, 9rem)))) / 2
+    );
+  }
+
+  .f8-page .f8-gallery:not(.f8-gallery--justified) .f8-gallery__grid {
+    columns: 1;
+    column-gap: var(--f8-gap);
+  }
+
+  .f8-page .f8-gallery:not(.f8-gallery--justified) .f8-gallery__item {
+    display: inline-block;
+    width: 100%;
+    margin: 0 0 var(--f8-gap);
+    break-inside: avoid;
+  }
+
+  .f8-page .f8-gallery--justified {
+    --f8-gallery-row-height: clamp(8.5rem, 17vw, 14rem);
+    --f8-gallery-gap: clamp(0.35rem, 0.8vw, 0.65rem);
+  }
+
+  .f8-page .f8-gallery--justified .f8-gallery__grid {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: var(--f8-gallery-gap);
+  }
+
+  .f8-page .f8-gallery--justified .f8-gallery__grid::after {
+    content: '';
+    flex-grow: 999999;
+  }
+
+  .f8-page .f8-gallery--justified .f8-gallery__item {
+    flex-basis: calc(
+      var(--f8-gallery-row-height) * var(--f8-image-aspect-ratio, 1.5)
+    );
+    flex-grow: calc(var(--f8-image-aspect-ratio, 1.5) * 100);
+    height: var(--f8-gallery-row-height);
+    min-width: min(
+      100%,
+      calc(var(--f8-gallery-row-height) * var(--f8-image-aspect-ratio, 1.5))
+    );
+    margin: 0;
+  }
+
+  .f8-page .f8-image__trigger {
+    display: block;
+    margin: 0;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .f8-page .f8-image {
+    display: block;
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--f8-border), transparent 20%);
+    border-radius: var(--f8-radius);
+    background: var(--f8-surface);
+    box-shadow: var(--f8-shadow);
+  }
+
+  .f8-page .f8-image img,
+  .f8-page :where(img):not(:where(.not-prose, .not-prose *)) {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin: 0;
+  }
+
+  .f8-page .f8-gallery--justified .f8-image__trigger,
+  .f8-page .f8-gallery--justified .f8-image,
+  .f8-page .f8-gallery--justified .f8-image img {
+    height: 100%;
+  }
+
+  .f8-page .f8-gallery--justified .f8-image img {
+    object-fit: cover;
+  }
+
+  .f8-page .f8-figure__caption,
+  .f8-page .f8-gallery__caption {
+    max-width: 34rem;
+    margin: 0.9rem 0 0;
+    color: var(--f8-muted);
+    font-size: 0.82rem;
+    line-height: 1.6;
+    letter-spacing: 0.01em;
+  }
+
+  .f8-page .f8-gallery__caption {
+    margin-bottom: 0.65rem;
+  }
+
+  .f8-page .f8-figure__caption-title,
+  .f8-page .f8-gallery__caption-title {
+    color: var(--f8-fg);
+    font-weight: 650;
+  }
+}
+
+@layer utilities {
+  .f8-page.prose {
+    max-width: 44rem;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@media (min-width: 44rem) {
+  .f8-page .f8-gallery:not(.f8-gallery--justified) .f8-gallery__grid {
+    columns: 2;
+  }
+}
+
+@media (min-width: 70rem) {
+  .f8-page .f8-gallery:not(.f8-gallery--justified) .f8-gallery__grid {
+    columns: 3;
+  }
+}
+
+@media (max-width: 820px) {
+  .f8-page .f8-figure,
+  .f8-page .f8-gallery {
+    width: 100%;
+    margin-inline: 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .f8-page .f8-image__trigger img {
+    transition:
+      scale 260ms ease,
+      filter 260ms ease;
+  }
+
+  .f8-page .f8-image__trigger:hover img {
+    scale: 1.015;
+    filter: saturate(0.92) contrast(1.03);
+  }
+}
+
+/* Keep generated Markdown image internals out of Tailwind Typography's media rhythm. */
+.f8-page.prose .f8-gallery__grid,
+.f8-page.prose .f8-gallery__item,
+.f8-page.prose .f8-gallery .f8-image__trigger,
+.f8-page.prose .f8-gallery .f8-image,
+.f8-page.prose .f8-gallery .f8-image img {
+  margin: 0;
+}
+
+.f8-page.prose .f8-figure .f8-image__trigger,
+.f8-page.prose .f8-figure .f8-image,
+.f8-page.prose .f8-figure .f8-image img {
+  margin: 0;
+}
