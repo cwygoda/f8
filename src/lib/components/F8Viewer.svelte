@@ -363,7 +363,6 @@
   function resetMap(): void {
     mapInstance?.remove();
     mapInstance = undefined;
-    mapHost = undefined;
     mapState = 'idle';
     mapImageId = undefined;
   }

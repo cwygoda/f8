@@ -87,6 +87,52 @@ describe('F8Viewer map options', () => {
     ).toBe('https://example.com/earth?lat=46.6943&lng=12.0859');
   });
 
+  it('replaces the map when navigating between geotagged images', async () => {
+    const target = document.createElement('div');
+    document.body.append(target);
+    mounted.push(
+      mount(F8Viewer, {
+        target,
+        props: {
+          images: [
+            imageFixture(),
+            imageFixture({ id: 'two', lat: 40.7128, lng: -74.006 })
+          ],
+          open: true,
+          enableMap: true,
+          mapStyleUrl: 'https://example.com/style.json'
+        }
+      })
+    );
+    await tick();
+
+    document
+      .querySelector<HTMLButtonElement>(
+        'button[aria-label="Show image information"]'
+      )
+      ?.click();
+    await tick();
+    await vi.waitFor(() => expect(mapConstructor).toHaveBeenCalledTimes(1));
+
+    document
+      .querySelector<HTMLButtonElement>('button[aria-label="Next image"]')
+      ?.click();
+    await tick();
+    expect(
+      document
+        .querySelector<HTMLImageElement>('[data-f8-viewer-image]')
+        ?.getAttribute('data-f8-viewer-image')
+    ).toBe('two');
+
+    await vi.waitFor(() => expect(mapConstructor).toHaveBeenCalledTimes(2));
+    expect(document.body.textContent).not.toContain('Map preview unavailable');
+    expect(mapConstructor).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        center: [-74.006, 40.7128]
+      })
+    );
+  });
+
   it('allows map zoom and marker links to be disabled', async () => {
     const target = document.createElement('div');
     document.body.append(target);
@@ -127,9 +173,11 @@ describe('F8Viewer map options', () => {
   });
 });
 
-function imageFixture(): F8ImageMetadata {
+function imageFixture(
+  options: { id?: string; lat?: number; lng?: number } = {}
+): F8ImageMetadata {
   return {
-    id: 'one',
+    id: options.id ?? 'one',
     sourcePath: 'images/one.jpg',
     relativePath: 'one.jpg',
     title: 'Alpine lake',
@@ -151,8 +199,8 @@ function imageFixture(): F8ImageMetadata {
     },
     location: {
       label: 'Lago di Braies',
-      lat: 46.6943,
-      lng: 12.0859
+      lat: options.lat ?? 46.6943,
+      lng: options.lng ?? 12.0859
     }
   };
 }
