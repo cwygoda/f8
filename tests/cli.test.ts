@@ -144,11 +144,14 @@ describe('f8 CLI', () => {
   });
 
   it('does not overwrite existing starter files unless forced', () => {
+    // Given an existing f8 starter project
     const cwd = fixtureDir();
     initProject({ cwd, force: false });
 
+    // When the user runs f8 init again
     const result = initProject({ cwd, force: false });
 
+    // Then f8 skips existing starter files instead of overwriting them
     expect(result.skipped).toEqual(
       expect.arrayContaining([
         join(cwd, 'package.json'),
@@ -156,5 +159,82 @@ describe('f8 CLI', () => {
         join(cwd, 'content', 'index.md')
       ])
     );
+  });
+
+  it('overwrites starter files when forced', () => {
+    // Given an existing starter file with local edits
+    const cwd = fixtureDir();
+    initProject({ cwd, force: false });
+    writeFileSync(join(cwd, 'content', 'index.md'), '# Local draft\n', 'utf8');
+
+    // When the user runs f8 init --force
+    const result = initProject({ cwd, force: true });
+
+    // Then f8 restores starter contents and reports the file as written
+    expect(result.created).toContain(join(cwd, 'content', 'index.md'));
+    expect(result.skipped).not.toContain(join(cwd, 'content', 'index.md'));
+    expect(readFileSync(join(cwd, 'content', 'index.md'), 'utf8')).toContain(
+      'Welcome to f8'
+    );
+  });
+
+  it('prints resolved configuration as JSON', async () => {
+    // Given a project with .f8.toml
+    const cwd = fixtureDir();
+    mkdirSync(cwd, { recursive: true });
+    writeFileSync(
+      join(cwd, '.f8.toml'),
+      `contentDir = "stories"\n\n[site]\ntitle = "CLI Site"\n`,
+      'utf8'
+    );
+    const messages: string[] = [];
+
+    // When the user runs f8 config
+    const exitCode = await main(['config'], {
+      cwd,
+      stdout: (message) => messages.push(message)
+    });
+
+    // Then f8 prints the resolved configuration and source path as JSON
+    const output = JSON.parse(messages.join('\n')) as {
+      path: string;
+      config: { contentDir: string; site: { title: string } };
+    };
+    expect(exitCode).toBe(0);
+    expect(output.path).toBe(join(cwd, '.f8.toml'));
+    expect(output.config.contentDir).toBe('stories');
+    expect(output.config.site.title).toBe('CLI Site');
+  });
+
+  it('returns actionable errors for unknown commands and invalid config', async () => {
+    // Given a terminal in an f8 workspace
+    const cwd = fixtureDir();
+    mkdirSync(cwd, { recursive: true });
+    const errors: string[] = [];
+
+    // When the user runs an unknown command
+    const unknownExitCode = await main(['publish'], {
+      cwd,
+      stderr: (message) => errors.push(message)
+    });
+
+    // Then f8 exits non-zero and prints supported usage
+    expect(unknownExitCode).toBe(1);
+    expect(errors.join('\n')).toContain('Unknown command: publish');
+    expect(errors.join('\n')).toContain('Usage:');
+
+    // Given invalid project configuration
+    writeFileSync(join(cwd, '.f8.toml'), 'unknownKey = true\n', 'utf8');
+    errors.length = 0;
+
+    // When the user asks f8 to inspect config
+    const configExitCode = await main(['config'], {
+      cwd,
+      stderr: (message) => errors.push(message)
+    });
+
+    // Then f8 exits non-zero and points at configuration validation
+    expect(configExitCode).toBe(1);
+    expect(errors.join('\n')).toContain('Invalid f8 configuration');
   });
 });
