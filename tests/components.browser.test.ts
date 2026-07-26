@@ -96,6 +96,67 @@ describe('F8 UI components', () => {
     expect(document.activeElement).toBe(focusBefore);
   });
 
+  it('disables viewer transitions when reduced motion is preferred', async () => {
+    const originalAnimate = HTMLElement.prototype.animate;
+    const originalMatchMedia = window.matchMedia;
+    const animate = vi.fn(
+      () =>
+        ({
+          cancel: vi.fn(),
+          finished: Promise.resolve()
+        }) as unknown as Animation
+    );
+
+    Object.defineProperty(HTMLElement.prototype, 'animate', {
+      configurable: true,
+      value: animate
+    });
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: vi.fn(
+        (query: string) =>
+          ({
+            matches: query === '(prefers-reduced-motion: reduce)',
+            media: query,
+            onchange: null,
+            addEventListener: vi.fn(),
+            removeEventListener: vi.fn(),
+            addListener: vi.fn(),
+            removeListener: vi.fn(),
+            dispatchEvent: vi.fn()
+          }) as unknown as MediaQueryList
+      )
+    });
+
+    try {
+      const target = document.createElement('div');
+      document.body.append(target);
+      mounted.push(
+        mount(F8Viewer, {
+          target,
+          props: {
+            images: [imageFixture('one'), imageFixture('two')],
+            open: true,
+            enableMap: false
+          }
+        })
+      );
+      await tick();
+
+      expect(document.querySelector('[role="dialog"]')).not.toBeNull();
+      expect(animate).not.toHaveBeenCalled();
+    } finally {
+      Object.defineProperty(HTMLElement.prototype, 'animate', {
+        configurable: true,
+        value: originalAnimate
+      });
+      Object.defineProperty(window, 'matchMedia', {
+        configurable: true,
+        value: originalMatchMedia
+      });
+    }
+  });
+
   it('traps focus inside the viewer controls', async () => {
     const target = document.createElement('div');
     document.body.append(target);
