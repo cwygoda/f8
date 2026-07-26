@@ -4,6 +4,8 @@ export default defineConfig({
   testDir: 'tests/e2e',
   fullyParallel: true,
   reporter: [['list'], ['html', { open: 'never' }]],
+  snapshotPathTemplate:
+    '{testDir}/{testFilePath}-snapshots/{arg}-{projectName}{ext}',
   use: {
     baseURL: 'http://127.0.0.1:4173',
     trace: 'on-first-retry'
