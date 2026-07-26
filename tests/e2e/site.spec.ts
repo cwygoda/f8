@@ -74,6 +74,56 @@ test.describe('f8 static starter', () => {
     ).toBeVisible();
   });
 
+  test('honors reduced motion in viewer interactions', async ({ page }) => {
+    // Given the reader prefers reduced motion
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.addInitScript(() => {
+      const originalAnimate = Element.prototype.animate;
+      let animationCount = 0;
+
+      Object.defineProperty(window, '__f8AnimationCount', {
+        value: () => animationCount
+      });
+
+      Element.prototype.animate = function (
+        keyframes: Keyframe[] | PropertyIndexedKeyframes | null,
+        options?: number | KeyframeAnimationOptions
+      ): Animation {
+        animationCount += 1;
+
+        return originalAnimate.call(this, keyframes, options);
+      };
+    });
+
+    // When the reader opens the viewer, navigates, and opens image information
+    await page.goto('/demo');
+    await page.waitForLoadState('networkidle');
+    await expect(
+      page.evaluate(
+        () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      )
+    ).resolves.toBe(true);
+
+    await page.locator('a[data-f8-viewer-trigger]').first().click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await page.getByRole('button', { name: 'Next image' }).click();
+    await page.getByRole('button', { name: 'Show image information' }).click();
+    await expect(
+      page.getByRole('complementary', { name: 'Image information' })
+    ).toBeVisible();
+
+    // Then viewer transitions are skipped instead of animated
+    await expect(
+      page.evaluate(() =>
+        (
+          window as unknown as {
+            __f8AnimationCount: () => number;
+          }
+        ).__f8AnimationCount()
+      )
+    ).resolves.toBe(0);
+  });
+
   test('renders SEO frontmatter metadata', async ({ page }) => {
     // Given Markdown frontmatter defines title and description
     // When the page is rendered

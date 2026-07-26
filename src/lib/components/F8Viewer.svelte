@@ -1,5 +1,7 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte';
+  import { cubicOut } from 'svelte/easing';
+  import type { TransitionConfig } from 'svelte/transition';
 
   import type { F8ImageMetadata } from '../types.js';
   import { DEFAULT_MAP_MARKER_URL_TEMPLATE } from '../viewer-defaults.js';
@@ -13,6 +15,11 @@
   } from './image-utils.js';
 
   type MapState = 'idle' | 'loading' | 'ready' | 'unavailable';
+  type NavigationDirection = -1 | 0 | 1;
+
+  interface ImageTransitionParams {
+    direction: NavigationDirection;
+  }
 
   interface MapLibreModule {
     Map: new (options: Record<string, unknown>) => {
@@ -50,9 +57,22 @@
   let mapState: MapState = 'idle';
   let mapImageId: string | undefined;
   let mapInstance: { remove: () => void; resize: () => void } | undefined;
+  let navigationDirection: NavigationDirection = 0;
+  const navigationState: {
+    imageId: string | undefined;
+    index: number | undefined;
+  } = {
+    imageId: undefined,
+    index: undefined
+  };
 
   $: safeIndex = normalizeIndex(index, images.length);
   $: current = images[safeIndex];
+  $: navigationDirection = updateNavigationDirection(
+    current?.id,
+    safeIndex,
+    images.length
+  );
   $: captionContent = current === undefined ? {} : imageCaption(current);
   $: titleId =
     current === undefined ? undefined : `f8-viewer-title-${current.id}`;
@@ -215,6 +235,75 @@
     go(distance > 0 ? -1 : 1);
   }
 
+  function viewerBackdrop(node: HTMLElement): TransitionConfig {
+    void node;
+
+    if (prefersReducedMotion()) {
+      return { duration: 0 };
+    }
+
+    return {
+      duration: 160,
+      easing: cubicOut,
+      css: (t) => `opacity: ${t}`
+    };
+  }
+
+  function imageIntro(
+    node: HTMLElement,
+    { direction }: ImageTransitionParams
+  ): TransitionConfig {
+    void node;
+
+    return imageMotion(direction, 170);
+  }
+
+  function imageOutro(
+    node: HTMLElement,
+    { direction }: ImageTransitionParams
+  ): TransitionConfig {
+    void node;
+
+    return imageMotion(reverseNavigationDirection(direction), 130);
+  }
+
+  function imageMotion(
+    direction: NavigationDirection,
+    duration: number
+  ): TransitionConfig {
+    if (prefersReducedMotion()) {
+      return { duration: 0 };
+    }
+
+    const x = direction * 22;
+
+    return {
+      duration,
+      easing: cubicOut,
+      css: (t, u) => `
+        opacity: ${t};
+        transform: translate3d(${x * u}px, 0, 0) scale(${0.995 + t * 0.005});
+      `
+    };
+  }
+
+  function overlayReveal(node: HTMLElement): TransitionConfig {
+    void node;
+
+    if (prefersReducedMotion()) {
+      return { duration: 0 };
+    }
+
+    return {
+      duration: 150,
+      easing: cubicOut,
+      css: (t, u) => `
+        opacity: ${t};
+        transform: translate3d(0, ${0.45 * u}rem, 0);
+      `
+    };
+  }
+
   async function ensureMap(image: F8ImageMetadata): Promise<void> {
     if (
       !isBrowser() ||
@@ -339,6 +428,59 @@
     return ((value % length) + length) % length;
   }
 
+  function updateNavigationDirection(
+    imageId: string | undefined,
+    nextIndex: number,
+    imageCount: number
+  ): NavigationDirection {
+    if (imageId === navigationState.imageId) {
+      navigationState.index = nextIndex;
+      return navigationDirection;
+    }
+
+    const direction =
+      navigationState.index === undefined || imageId === undefined
+        ? 0
+        : navigationDirectionFor(navigationState.index, nextIndex, imageCount);
+
+    navigationState.imageId = imageId;
+    navigationState.index = nextIndex;
+
+    return direction;
+  }
+
+  function navigationDirectionFor(
+    previous: number,
+    next: number,
+    length: number
+  ): NavigationDirection {
+    if (length <= 1) {
+      return 0;
+    }
+
+    const start = normalizeIndex(previous, length);
+    const end = normalizeIndex(next, length);
+
+    if (start === end) {
+      return 0;
+    }
+
+    const forwardDistance = normalizeIndex(end - start, length);
+    const backwardDistance = normalizeIndex(start - end, length);
+
+    return forwardDistance <= backwardDistance ? 1 : -1;
+  }
+
+  function reverseNavigationDirection(
+    direction: NavigationDirection
+  ): NavigationDirection {
+    if (direction === 0) {
+      return 0;
+    }
+
+    return direction === 1 ? -1 : 1;
+  }
+
   function getFocusable(root: HTMLElement): HTMLElement[] {
     return [
       ...root.querySelectorAll<HTMLElement>(
@@ -350,12 +492,24 @@
   function isBrowser(): boolean {
     return typeof document !== 'undefined';
   }
+
+  function prefersReducedMotion(): boolean {
+    const view = isBrowser() ? document.defaultView : undefined;
+    const animationsUnsupported =
+      !isBrowser() || typeof document.documentElement.animate !== 'function';
+
+    return (
+      animationsUnsupported ||
+      (view?.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false)
+    );
+  }
 </script>
 
 {#if open && current !== undefined}
   <div
     bind:this={dialog}
     class="f8-viewer"
+    transition:viewerBackdrop
     role="dialog"
     aria-modal="true"
     aria-labelledby={titleId}
@@ -411,32 +565,43 @@
       >
     {/if}
 
-    <figure class="f8-viewer__figure">
-      <picture>
-        {#each sources as source (source.type)}
-          <source type={source.type} srcset={source.srcset} {sizes} />
-        {/each}
-        <img
-          src={fallback?.src ?? current.sourcePath}
-          alt={imageAlt(current)}
-          width={current.width}
-          height={current.height}
-          decoding="async"
-          data-f8-viewer-image={current.id}
-        />
-      </picture>
-      {#if captionContent.title || captionContent.description}
-        <figcaption id={captionId} class="f8-viewer__caption">
-          {#if captionContent.title}<strong>{captionContent.title}</strong>{/if}
-          {#if captionContent.description}<span
-              >{captionContent.description}</span
-            >{/if}
-        </figcaption>
-      {/if}
-    </figure>
+    {#key current.id}
+      <figure
+        class="f8-viewer__figure"
+        in:imageIntro={{ direction: navigationDirection }}
+        out:imageOutro={{ direction: navigationDirection }}
+      >
+        <picture>
+          {#each sources as source (source.type)}
+            <source type={source.type} srcset={source.srcset} {sizes} />
+          {/each}
+          <img
+            src={fallback?.src ?? current.sourcePath}
+            alt={imageAlt(current)}
+            width={current.width}
+            height={current.height}
+            decoding="async"
+            data-f8-viewer-image={current.id}
+          />
+        </picture>
+        {#if captionContent.title || captionContent.description}
+          <figcaption id={captionId} class="f8-viewer__caption">
+            {#if captionContent.title}<strong>{captionContent.title}</strong
+              >{/if}
+            {#if captionContent.description}<span
+                >{captionContent.description}</span
+              >{/if}
+          </figcaption>
+        {/if}
+      </figure>
+    {/key}
 
     {#if enableExifOverlay && infoOpen}
-      <aside class="f8-viewer__overlay" aria-label="Image information">
+      <aside
+        class="f8-viewer__overlay"
+        aria-label="Image information"
+        transition:overlayReveal
+      >
         <div>
           {#if captionContent.title}<h2>{captionContent.title}</h2>{/if}
           {#if captionContent.description}<p>
@@ -518,7 +683,6 @@
     color: var(--f8-fg);
     background: rgb(10 9 8 / 94%);
     backdrop-filter: blur(18px);
-    animation: f8-viewer-in 180ms ease-out;
   }
 
   .f8-viewer:focus {
@@ -592,11 +756,13 @@
   }
 
   .f8-viewer__figure {
+    grid-area: 1 / 1;
     display: grid;
     gap: 1rem;
     max-width: min(92vw, 1440px);
     max-height: 92vh;
     margin: 0;
+    will-change: opacity, transform;
   }
 
   .f8-viewer__figure picture,
@@ -652,7 +818,6 @@
     border-radius: var(--f8-radius);
     box-shadow: var(--f8-shadow);
     backdrop-filter: blur(24px);
-    animation: f8-overlay-in 160ms ease-out;
   }
 
   .f8-viewer__overlay h2,
@@ -822,20 +987,6 @@
     background: #ece8df;
   }
 
-  @keyframes f8-viewer-in {
-    from {
-      opacity: 0;
-      transform: scale(0.985);
-    }
-  }
-
-  @keyframes f8-overlay-in {
-    from {
-      opacity: 0;
-      transform: translateY(0.5rem);
-    }
-  }
-
   @keyframes f8-map-marker-pulse {
     from {
       opacity: 0.85;
@@ -868,9 +1019,13 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .f8-viewer,
-    .f8-viewer__overlay {
+    .f8-viewer__figure {
+      will-change: auto;
+    }
+
+    .f8-viewer__map :global(.f8-viewer__map-marker-pulse) {
       animation: none;
+      opacity: 0;
     }
   }
 </style>
