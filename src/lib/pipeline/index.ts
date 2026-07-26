@@ -17,7 +17,7 @@ import path, {
 
 import { encode as encodeBlurhash } from 'blurhash';
 import exifr from 'exifr';
-import sharp from 'sharp';
+import sharp, { type KernelEnum, type Metadata, type Sharp } from 'sharp';
 import { parse as parseYaml } from 'yaml';
 
 import { f8ConfigSchema, type F8Config } from '../config/index.js';
@@ -251,7 +251,7 @@ export async function processImage(
   };
 }
 
-function normalizedDimensions(metadata: sharp.Metadata): {
+function normalizedDimensions(metadata: Metadata): {
   width: number;
   height: number;
 } {
@@ -510,7 +510,7 @@ async function buildVariant(input: {
 
 function interpolationToKernel(
   interpolation: F8Config['image']['interpolation']
-): keyof sharp.KernelEnum {
+): keyof KernelEnum {
   if (interpolation === 'mks') {
     return 'mks2021';
   }
@@ -519,10 +519,10 @@ function interpolationToKernel(
 }
 
 function applyFormat(
-  transformer: sharp.Sharp,
+  transformer: Sharp,
   format: F8ImageFormat,
   quality: number
-): sharp.Sharp {
+): Sharp {
   if (format === 'avif') {
     return transformer.avif({ quality });
   }
