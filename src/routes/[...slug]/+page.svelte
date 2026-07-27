@@ -115,6 +115,8 @@
     enableMapZoom={page.viewer.enableMapZoom}
     showMapAttribution={page.viewer.showMapAttribution}
     enableMapMarkerLink={page.viewer.enableMapMarkerLink}
+    showCaptions={page.viewer.showCaptions}
+    captionAlign={page.viewer.captionAlign}
     mapMarkerUrlTemplate={page.viewer.mapMarkerUrlTemplate}
     enableExifOverlay={page.viewer.enableExifOverlay}
     mapStyleUrl={page.viewer.mapStyleUrl}

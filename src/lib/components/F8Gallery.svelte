@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { F8ImageMetadata } from '../types.js';
+  import type { F8CaptionAlign, F8ImageMetadata } from '../types.js';
   import { DEFAULT_MAP_MARKER_URL_TEMPLATE } from '../viewer-defaults.js';
   import F8Image from './F8Image.svelte';
   import F8Viewer from './F8Viewer.svelte';
@@ -11,6 +11,8 @@
   export let gap = 'var(--f8-gap)';
   export let maxColumns = 4;
   export let showCaptions = true;
+  export let showViewerCaptions = true;
+  export let viewerCaptionAlign: F8CaptionAlign = 'left';
   export let enableViewer = true;
   export let enableMap = true;
   export let enableMapZoom = true;
@@ -74,6 +76,8 @@
     {enableMapZoom}
     {showMapAttribution}
     {enableMapMarkerLink}
+    showCaptions={showViewerCaptions}
+    captionAlign={viewerCaptionAlign}
     {mapMarkerUrlTemplate}
     {enableExifOverlay}
     {mapStyleUrl}

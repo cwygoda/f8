@@ -96,6 +96,8 @@ Supported environment variables in the current foundation:
 - `F8_SITE_URL`
 - `F8_ENABLE_MAP`
 - `F8_ENABLE_EXIF_OVERLAY`
+- `F8_SHOW_VIEWER_CAPTIONS`
+- `F8_VIEWER_CAPTION_ALIGN`
 - `F8_INCLUDE_GPS_METADATA`
 - `F8_INCLUDE_EXIF_METADATA`
 - `F8_STRIP_OUTPUT_METADATA`
@@ -127,7 +129,9 @@ The renderer is powered by `remark`/`rehype`. It resolves Markdown image nodes t
 <F8Gallery {images} />
 ```
 
-Components render responsive `picture` markup from `F8ImageMetadata`, use dominant-color placeholders, support CSS-variable theming, and include an accessible fullscreen viewer with keyboard, swipe, EXIF overlay, and lazy MapLibre preview support. Public exports include `@cwygoda/f8/svelte`, `@cwygoda/f8/components/F8Image.svelte`, `@cwygoda/f8/components/F8Gallery.svelte`, `@cwygoda/f8/components/F8Viewer.svelte`, and `@cwygoda/f8/components/image-utils`.
+Components render responsive `picture` markup from `F8ImageMetadata`, use dominant-color placeholders, support CSS-variable theming, and include an accessible fullscreen viewer with keyboard, swipe, captions, EXIF overlay, and lazy MapLibre preview support. Public exports include `@cwygoda/f8/svelte`, `@cwygoda/f8/components/F8Image.svelte`, `@cwygoda/f8/components/F8Gallery.svelte`, `@cwygoda/f8/components/F8Viewer.svelte`, and `@cwygoda/f8/components/image-utils`.
+
+Viewer captions are enabled by default, left-aligned by default, and use image metadata plus Markdown image titles when content pages are loaded through `loadF8Page`. Disable them globally with `viewer.showCaptions = false` (or `F8_SHOW_VIEWER_CAPTIONS=false`), per Markdown page with frontmatter `viewer: { showCaptions: false }`, or per image sidecar with `viewer: { showCaption: false }`. Align them with `viewer.captionAlign = "left" | "center" | "right"` (or `F8_VIEWER_CAPTION_ALIGN`), per Markdown page with `viewer.captionAlign`, or per image sidecar with `viewer.captionAlign`.
 
 Map previews use the optional peer dependency `maplibre-gl`. Install it in consuming apps that enable map previews and set `viewer.mapStyleUrl` (or `F8_MAP_STYLE_URL`) to a MapLibre style URL; without a style URL or MapLibre, the viewer gracefully reports the map preview as unavailable. Maps are zoomable by default (`viewer.enableMapZoom = false` opts out), attribution controls are hidden by default (`viewer.showMapAttribution = true` opts in), and the custom location marker links to Google Earth by default via configurable `viewer.mapMarkerUrlTemplate` (`viewer.enableMapMarkerLink = false` opts out).
 
@@ -143,7 +147,7 @@ pnpm dev
 pnpm build
 ```
 
-Frontmatter fields such as `title`, `description`, `canonical`, `image`, `ogImage`, `twitterImage`, and `theme` drive page metadata and presentation. `content/index.md` renders at `/`; nested files such as `content/travel/kyoto.md` render at `/travel/kyoto`.
+Frontmatter fields such as `title`, `description`, `canonical`, `image`, `ogImage`, `twitterImage`, `theme`, `viewer.showCaptions`, and `viewer.captionAlign` drive page metadata and presentation. `content/index.md` renders at `/`; nested files such as `content/travel/kyoto.md` render at `/travel/kyoto`.
 
 Images are colocated with Markdown content and referenced with Markdown-relative paths. When a page is loaded during dev or prerender, f8 processes supported local image references on demand, caches the responsive variants, and rewrites image metadata URLs to `/@f8/<cache-key>/<cache-path>`:
 

@@ -1,11 +1,13 @@
 import { z } from 'zod';
 
+import { F8_CAPTION_ALIGNS } from '../types.js';
 import { DEFAULT_MAP_MARKER_URL_TEMPLATE } from '../viewer-defaults.js';
 
 export const DEFAULT_IMAGE_WIDTHS = [480, 768, 1024, 1440, 1920, 2560] as const;
 export const DEFAULT_IMAGE_FORMATS = ['avif', 'webp', 'jpeg'] as const;
 
 export const f8ImageFormatSchema = z.enum(['avif', 'webp', 'jpeg', 'png']);
+export const f8CaptionAlignSchema = z.enum(F8_CAPTION_ALIGNS);
 
 export const f8ImageConfigSchema = z
   .object({
@@ -48,6 +50,8 @@ export const f8ViewerConfigSchema = z
     enableMapZoom: z.boolean().default(true),
     showMapAttribution: z.boolean().default(false),
     enableMapMarkerLink: z.boolean().default(true),
+    showCaptions: z.boolean().default(true),
+    captionAlign: f8CaptionAlignSchema.default('left'),
     mapMarkerUrlTemplate: z
       .string()
       .min(1)

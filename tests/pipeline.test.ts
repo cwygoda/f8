@@ -116,6 +116,9 @@ alt: Sidecar alt
 exif:
   aperture: f/5.6
   iso: 100
+viewer:
+  showCaption: false
+  captionAlign: right
 ---
 
 Sidecar caption.
@@ -134,6 +137,8 @@ Sidecar caption.
     expect(image.metadata.title).toBe('Sidecar title');
     expect(image.metadata.alt).toBe('Sidecar alt');
     expect(image.metadata.exif).toMatchObject({ aperture: 'f/5.6', iso: 100 });
+    expect(image.metadata.viewer?.showCaption).toBe(false);
+    expect(image.metadata.viewer?.captionAlign).toBe('right');
     expect(image.metadata.width).toBe(80);
     expect(image.metadata.height).toBe(40);
     expect(image.metadata.variants).toHaveLength(2);

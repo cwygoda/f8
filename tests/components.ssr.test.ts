@@ -27,6 +27,35 @@ describe('F8 UI components SSR', () => {
 
     expect(body).toContain('role="dialog"');
     expect(body).toContain('data-f8-viewer-image="one"');
+    expect(body).toContain('data-f8-caption-align="left"');
+  });
+
+  it('can hide viewer captions during SSR', () => {
+    const { body } = renderServer(F8Viewer, {
+      props: {
+        images: [imageFixture('one')],
+        open: true,
+        enableMap: false,
+        showCaptions: false
+      }
+    });
+
+    expect(body).not.toContain('class="f8-viewer__caption"');
+    expect(body).not.toContain('aria-describedby');
+  });
+
+  it('can align viewer captions during SSR', () => {
+    const { body } = renderServer(F8Viewer, {
+      props: {
+        images: [imageFixture('one')],
+        open: true,
+        enableMap: false,
+        captionAlign: 'center'
+      }
+    });
+
+    expect(body).toContain('f8-viewer__caption--center');
+    expect(body).toContain('data-f8-caption-align="center"');
   });
 });
 

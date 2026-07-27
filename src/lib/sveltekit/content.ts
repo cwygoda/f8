@@ -15,10 +15,19 @@ import {
   type F8Config,
   type F8ViewerConfig
 } from '../config/index.js';
-import { listMarkdownImageSources, renderMarkdown } from '../markdown/index.js';
+import {
+  listMarkdownImageSources,
+  renderMarkdown,
+  type F8MarkdownImageNode
+} from '../markdown/index.js';
 import { isSupportedImagePath, processImage } from '../pipeline/index.js';
 import { DEFAULT_F8_ASSET_BASE, withF8AssetUrls } from './assets.js';
-import type { F8ImageMetadata, F8ImageVariant } from '../types.js';
+import { isF8CaptionAlign } from '../types.js';
+import type {
+  F8CaptionAlign,
+  F8ImageMetadata,
+  F8ImageVariant
+} from '../types.js';
 
 const FRONTMATTER_BOUNDARY = '---';
 const MARKDOWN_EXTENSION = '.md';
@@ -37,6 +46,13 @@ export interface F8PageFrontmatter {
   twitterDescription?: string;
   twitterImage?: string;
   theme?: 'dark' | 'light' | 'system';
+  viewer?: F8PageViewerFrontmatter;
+  [key: string]: unknown;
+}
+
+export interface F8PageViewerFrontmatter {
+  showCaptions?: boolean;
+  captionAlign?: F8CaptionAlign;
   [key: string]: unknown;
 }
 
@@ -183,8 +199,9 @@ export async function loadF8Page(
     sanitize: config.security.sanitizeMarkdown
   });
   const pageImages = rendered.images
-    .map((image) => image.metadata)
+    .map(markdownImageToViewerMetadata)
     .filter((image): image is F8ImageMetadata => image !== undefined);
+  const viewer = createPageViewerConfig(config.viewer, parsed.frontmatter);
 
   return {
     ...entry,
@@ -192,7 +209,7 @@ export async function loadF8Page(
     markdown: parsed.content,
     html: rendered.html,
     images: pageImages,
-    viewer: config.viewer,
+    viewer,
     seo: createPageSeo({
       frontmatter: parsed.frontmatter,
       slug: entry.slug,
@@ -322,6 +339,47 @@ export function createPageSeo(input: {
         : { description: twitterDescription }),
       ...(twitterImage === undefined ? {} : { image: twitterImage })
     }
+  };
+}
+
+function createPageViewerConfig(
+  config: F8ViewerConfig,
+  frontmatter: F8PageFrontmatter
+): F8ViewerConfig {
+  const frontmatterViewer: Record<string, unknown> = isRecord(
+    frontmatter.viewer
+  )
+    ? frontmatter.viewer
+    : {};
+  const showCaptions = booleanFrontmatter(frontmatterViewer.showCaptions);
+  const captionAlign = captionAlignFrontmatter(frontmatterViewer.captionAlign);
+  const overrides: Partial<F8ViewerConfig> = {
+    ...(showCaptions === undefined
+      ? {}
+      : { showCaptions: config.showCaptions && showCaptions }),
+    ...(captionAlign === undefined ? {} : { captionAlign })
+  };
+
+  return Object.keys(overrides).length === 0
+    ? config
+    : { ...config, ...overrides };
+}
+
+function markdownImageToViewerMetadata(
+  image: F8MarkdownImageNode
+): F8ImageMetadata | undefined {
+  const metadata = image.metadata;
+  if (metadata === undefined) {
+    return undefined;
+  }
+
+  const title = firstString(metadata.title, image.title);
+  const alt = firstString(image.alt, metadata.alt, title);
+
+  return {
+    ...metadata,
+    ...(alt === undefined ? {} : { alt }),
+    ...(title === undefined ? {} : { title })
   };
 }
 
@@ -552,6 +610,14 @@ function stringFrontmatter(value: unknown): string | undefined {
   return typeof value === 'string' && value.trim().length > 0
     ? value
     : undefined;
+}
+
+function booleanFrontmatter(value: unknown): boolean | undefined {
+  return typeof value === 'boolean' ? value : undefined;
+}
+
+function captionAlignFrontmatter(value: unknown): F8CaptionAlign | undefined {
+  return isF8CaptionAlign(value) ? value : undefined;
 }
 
 function optionalString<K extends string>(

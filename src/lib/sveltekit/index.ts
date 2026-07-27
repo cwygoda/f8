@@ -19,6 +19,7 @@ export {
   type F8PageEntry,
   type F8PageFrontmatter,
   type F8PageSeo,
+  type F8PageViewerFrontmatter,
   type F8RenderedPage,
   type F8StaticSiteOptions
 } from './content.js';

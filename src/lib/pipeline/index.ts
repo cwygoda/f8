@@ -21,11 +21,14 @@ import sharp, { type KernelEnum, type Metadata, type Sharp } from 'sharp';
 import { parse as parseYaml } from 'yaml';
 
 import { f8ConfigSchema, type F8Config } from '../config/index.js';
+import { isF8CaptionAlign } from '../types.js';
 import type {
+  F8CaptionAlign,
   F8Exif,
   F8ImageFormat,
   F8ImageMetadata,
   F8ImageVariant,
+  F8ImageViewerOptions,
   F8Location
 } from '../types.js';
 
@@ -221,6 +224,9 @@ export async function processImage(
     variants,
     ...(hasExif(exif) ? { exif } : {}),
     ...(hasLocation(location) ? { location } : {}),
+    ...(sidecarOverrides.viewer !== undefined
+      ? { viewer: sidecarOverrides.viewer }
+      : {}),
     ...(sidecar !== undefined
       ? {
           sidecar: {
@@ -310,6 +316,7 @@ function sidecarToOverrides(sidecar: ParsedSidecar | undefined): {
   description?: string;
   exif?: F8Exif;
   location?: F8Location;
+  viewer?: F8ImageViewerOptions;
 } {
   if (sidecar === undefined) {
     return {};
@@ -318,6 +325,7 @@ function sidecarToOverrides(sidecar: ParsedSidecar | undefined): {
   const source = sidecar.frontmatter;
   const exifSource = asRecord(source.exif);
   const locationSource = asRecord(source.location);
+  const viewerSource = asRecord(source.viewer);
   const exif: F8Exif = {
     ...stringField(source, 'camera', 'camera'),
     ...stringField(source, 'lens', 'lens'),
@@ -340,13 +348,19 @@ function sidecarToOverrides(sidecar: ParsedSidecar | undefined): {
     ...numberField(locationSource, 'lat', 'lat'),
     ...numberField(locationSource, 'lng', 'lng')
   };
+  const viewer: F8ImageViewerOptions = {
+    ...booleanField(viewerSource, 'showCaptions', 'showCaption'),
+    ...booleanField(viewerSource, 'showCaption', 'showCaption'),
+    ...captionAlignField(viewerSource, 'captionAlign', 'captionAlign')
+  };
 
   return {
     ...stringField(source, 'alt', 'alt'),
     ...stringField(source, 'title', 'title'),
     ...stringField(source, 'description', 'description'),
     ...(hasExif(exif) ? { exif } : {}),
-    ...(hasLocation(location) ? { location } : {})
+    ...(hasLocation(location) ? { location } : {}),
+    ...(hasImageViewerOptions(viewer) ? { viewer } : {})
   };
 }
 
@@ -763,6 +777,28 @@ function numberField<T extends string>(
     : ({ [target]: value } as Partial<Record<T, number>>);
 }
 
+function booleanField<T extends string>(
+  source: Record<string, unknown>,
+  key: string,
+  target: T
+): Partial<Record<T, boolean>> {
+  const value = source[key];
+  return typeof value === 'boolean'
+    ? ({ [target]: value } as Partial<Record<T, boolean>>)
+    : {};
+}
+
+function captionAlignField<T extends string>(
+  source: Record<string, unknown>,
+  key: string,
+  target: T
+): Partial<Record<T, F8CaptionAlign>> {
+  const value = source[key];
+  return isF8CaptionAlign(value)
+    ? ({ [target]: value } as Partial<Record<T, F8CaptionAlign>>)
+    : {};
+}
+
 function gpsCoordinateField<T extends string>(
   source: Record<string, unknown>,
   key: string,
@@ -876,6 +912,10 @@ function hasExif(exif: F8Exif): boolean {
 
 function hasLocation(location: F8Location): boolean {
   return Object.values(location).some((value) => value !== undefined);
+}
+
+function hasImageViewerOptions(viewer: F8ImageViewerOptions): boolean {
+  return Object.values(viewer).some((value) => value !== undefined);
 }
 
 function quantize(value: number): number {

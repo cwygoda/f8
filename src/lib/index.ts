@@ -14,6 +14,7 @@ export {
 } from './markdown/index.js';
 export { f8SvelteKit } from './sveltekit/index.js';
 export { F8Gallery, F8Image, F8Viewer } from './svelte/index.js';
+export { F8_CAPTION_ALIGNS, isF8CaptionAlign } from './types.js';
 export type {
   F8SvelteKitIntegration,
   F8SvelteKitOptions
@@ -35,9 +36,11 @@ export type {
   F8ViewerConfig
 } from './config/index.js';
 export type {
+  F8CaptionAlign,
   F8Exif,
   F8ImageFormat,
   F8ImageMetadata,
   F8ImageVariant,
+  F8ImageViewerOptions,
   F8Location
 } from './types.js';

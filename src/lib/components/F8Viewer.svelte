@@ -3,7 +3,7 @@
   import { cubicOut } from 'svelte/easing';
   import type { TransitionConfig } from 'svelte/transition';
 
-  import type { F8ImageMetadata } from '../types.js';
+  import type { F8CaptionAlign, F8ImageMetadata } from '../types.js';
   import { DEFAULT_MAP_MARKER_URL_TEMPLATE } from '../viewer-defaults.js';
   import {
     DEFAULT_IMAGE_SIZES,
@@ -41,6 +41,8 @@
   export let enableMapZoom = true;
   export let showMapAttribution = false;
   export let enableMapMarkerLink = true;
+  export let showCaptions = true;
+  export let captionAlign: F8CaptionAlign = 'left';
   export let mapMarkerUrlTemplate = DEFAULT_MAP_MARKER_URL_TEMPLATE;
   export let enableExifOverlay = true;
   export let mapStyleUrl: string | undefined = undefined;
@@ -74,10 +76,18 @@
     images.length
   );
   $: captionContent = current === undefined ? {} : imageCaption(current);
+  $: currentCaptionAlign = current?.viewer?.captionAlign ?? captionAlign;
+  $: captionVisible =
+    showCaptions &&
+    current?.viewer?.showCaption !== false &&
+    (captionContent.title !== undefined ||
+      captionContent.description !== undefined);
   $: titleId =
     current === undefined ? undefined : `f8-viewer-title-${current.id}`;
   $: captionId =
-    current === undefined ? undefined : `f8-viewer-caption-${current.id}`;
+    current === undefined || !captionVisible
+      ? undefined
+      : `f8-viewer-caption-${current.id}`;
   $: fallback = current === undefined ? undefined : fallbackVariant(current);
   $: sources = current === undefined ? [] : sourceSets(current.variants);
   $: canNavigate = images.length > 1;
@@ -583,8 +593,15 @@
             data-f8-viewer-image={current.id}
           />
         </picture>
-        {#if captionContent.title || captionContent.description}
-          <figcaption id={captionId} class="f8-viewer__caption">
+        {#if captionVisible}
+          <figcaption
+            id={captionId}
+            class="f8-viewer__caption"
+            class:f8-viewer__caption--left={currentCaptionAlign === 'left'}
+            class:f8-viewer__caption--center={currentCaptionAlign === 'center'}
+            class:f8-viewer__caption--right={currentCaptionAlign === 'right'}
+            data-f8-caption-align={currentCaptionAlign}
+          >
             {#if captionContent.title}<strong>{captionContent.title}</strong
               >{/if}
             {#if captionContent.description}<span
@@ -755,9 +772,10 @@
   }
 
   .f8-viewer__figure {
+    position: relative;
     grid-area: 1 / 1;
-    display: grid;
-    gap: 1rem;
+    display: block;
+    width: fit-content;
     max-width: min(92vw, 1440px);
     max-height: 92vh;
     margin: 0;
@@ -767,24 +785,31 @@
   .f8-viewer__figure picture,
   .f8-viewer__figure img {
     display: block;
-    max-width: 100%;
-    max-height: min(82vh, 1100px);
-    margin: auto;
     border-radius: calc(var(--f8-radius) * 0.7);
+  }
+
+  .f8-viewer__figure picture {
+    width: fit-content;
+    max-width: 100%;
   }
 
   .f8-viewer__figure img {
     width: auto;
     height: auto;
+    max-width: min(92vw, 1440px);
+    max-height: min(82vh, 1100px);
     object-fit: contain;
     box-shadow: var(--f8-shadow);
   }
 
   .f8-viewer__caption {
+    position: absolute;
+    top: calc(100% + 1rem);
     display: flex;
     flex-wrap: wrap;
     gap: 0.35rem 0.75rem;
-    justify-content: center;
+    width: max-content;
+    max-width: min(calc(100vw - 2rem), 44rem);
     color: #cfd6cc;
     font-family: var(
       --f8-font-sans,
@@ -795,7 +820,25 @@
     );
     font-size: 0.95rem;
     line-height: 1.45;
+  }
+
+  .f8-viewer__caption--left {
+    left: 0;
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .f8-viewer__caption--center {
+    left: 50%;
+    justify-content: center;
     text-align: center;
+    transform: translateX(-50%);
+  }
+
+  .f8-viewer__caption--right {
+    right: 0;
+    justify-content: flex-end;
+    text-align: right;
   }
 
   .f8-viewer__caption strong {

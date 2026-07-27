@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import { parse as parseToml } from 'smol-toml';
 import { ZodError } from 'zod';
 
+import { isF8CaptionAlign, type F8CaptionAlign } from '../types.js';
 import { f8ConfigSchema, type F8Config } from './schema.js';
 
 export { f8ConfigSchema } from './schema.js';
@@ -24,6 +25,15 @@ export type DeepPartial<T> = {
     ? DeepPartial<T[K]>
     : T[K];
 };
+
+type ViewerBooleanKey = Extract<
+  {
+    [K in keyof F8Config['viewer']]: F8Config['viewer'][K] extends boolean
+      ? K
+      : never;
+  }[keyof F8Config['viewer']],
+  string
+>;
 
 export interface LoadConfigOptions {
   cwd?: string;
@@ -86,7 +96,18 @@ function configFromEnv(env: NodeJS.ProcessEnv): DeepPartial<F8Config> {
   assignString(config, 'contentDir', env.F8_CONTENT_DIR);
   assignString(config, 'outputDir', env.F8_OUTPUT_DIR);
   assignString(config, 'cacheDir', env.F8_CACHE_DIR);
+  assignSiteEnv(config, env);
+  assignViewerEnv(config, env);
+  assignPrivacyEnv(config, env);
+  assignSecurityEnv(config, env);
 
+  return config;
+}
+
+function assignSiteEnv(
+  config: DeepPartial<F8Config>,
+  env: NodeJS.ProcessEnv
+): void {
   if (env.F8_SITE_TITLE !== undefined && env.F8_SITE_TITLE.length > 0) {
     config.site = { ...(config.site ?? {}), title: env.F8_SITE_TITLE };
   }
@@ -94,35 +115,42 @@ function configFromEnv(env: NodeJS.ProcessEnv): DeepPartial<F8Config> {
   if (env.F8_SITE_URL !== undefined && env.F8_SITE_URL.length > 0) {
     config.site = { ...(config.site ?? {}), url: env.F8_SITE_URL };
   }
+}
 
-  const enableMap = parseBooleanEnv('F8_ENABLE_MAP', env.F8_ENABLE_MAP);
-  if (enableMap !== undefined) {
-    config.viewer = { ...(config.viewer ?? {}), enableMap };
-  }
-
-  const enableMapZoom = parseBooleanEnv(
+function assignViewerEnv(
+  config: DeepPartial<F8Config>,
+  env: NodeJS.ProcessEnv
+): void {
+  assignViewerBoolean(config, 'enableMap', 'F8_ENABLE_MAP', env.F8_ENABLE_MAP);
+  assignViewerBoolean(
+    config,
+    'enableMapZoom',
     'F8_ENABLE_MAP_ZOOM',
     env.F8_ENABLE_MAP_ZOOM
   );
-  if (enableMapZoom !== undefined) {
-    config.viewer = { ...(config.viewer ?? {}), enableMapZoom };
-  }
-
-  const showMapAttribution = parseBooleanEnv(
+  assignViewerBoolean(
+    config,
+    'showMapAttribution',
     'F8_SHOW_MAP_ATTRIBUTION',
     env.F8_SHOW_MAP_ATTRIBUTION
   );
-  if (showMapAttribution !== undefined) {
-    config.viewer = { ...(config.viewer ?? {}), showMapAttribution };
-  }
-
-  const enableMapMarkerLink = parseBooleanEnv(
+  assignViewerBoolean(
+    config,
+    'enableMapMarkerLink',
     'F8_ENABLE_MAP_MARKER_LINK',
     env.F8_ENABLE_MAP_MARKER_LINK
   );
-  if (enableMapMarkerLink !== undefined) {
-    config.viewer = { ...(config.viewer ?? {}), enableMapMarkerLink };
-  }
+  assignViewerBoolean(
+    config,
+    'showCaptions',
+    'F8_SHOW_VIEWER_CAPTIONS',
+    env.F8_SHOW_VIEWER_CAPTIONS
+  );
+  assignViewerCaptionAlign(
+    config,
+    'F8_VIEWER_CAPTION_ALIGN',
+    env.F8_VIEWER_CAPTION_ALIGN
+  );
 
   if (
     env.F8_MAP_MARKER_URL_TEMPLATE !== undefined &&
@@ -134,13 +162,12 @@ function configFromEnv(env: NodeJS.ProcessEnv): DeepPartial<F8Config> {
     };
   }
 
-  const enableExifOverlay = parseBooleanEnv(
+  assignViewerBoolean(
+    config,
+    'enableExifOverlay',
     'F8_ENABLE_EXIF_OVERLAY',
     env.F8_ENABLE_EXIF_OVERLAY
   );
-  if (enableExifOverlay !== undefined) {
-    config.viewer = { ...(config.viewer ?? {}), enableExifOverlay };
-  }
 
   if (env.F8_MAP_STYLE_URL !== undefined && env.F8_MAP_STYLE_URL.length > 0) {
     config.viewer = {
@@ -148,7 +175,12 @@ function configFromEnv(env: NodeJS.ProcessEnv): DeepPartial<F8Config> {
       mapStyleUrl: env.F8_MAP_STYLE_URL
     };
   }
+}
 
+function assignPrivacyEnv(
+  config: DeepPartial<F8Config>,
+  env: NodeJS.ProcessEnv
+): void {
   const includeGpsMetadata = parseBooleanEnv(
     'F8_INCLUDE_GPS_METADATA',
     env.F8_INCLUDE_GPS_METADATA
@@ -172,7 +204,12 @@ function configFromEnv(env: NodeJS.ProcessEnv): DeepPartial<F8Config> {
   if (stripOutputMetadata !== undefined) {
     config.privacy = { ...(config.privacy ?? {}), stripOutputMetadata };
   }
+}
 
+function assignSecurityEnv(
+  config: DeepPartial<F8Config>,
+  env: NodeJS.ProcessEnv
+): void {
   const allowUnprocessedImages = parseBooleanEnv(
     'F8_ALLOW_UNPROCESSED_IMAGES',
     env.F8_ALLOW_UNPROCESSED_IMAGES
@@ -180,8 +217,29 @@ function configFromEnv(env: NodeJS.ProcessEnv): DeepPartial<F8Config> {
   if (allowUnprocessedImages !== undefined) {
     config.security = { ...(config.security ?? {}), allowUnprocessedImages };
   }
+}
 
-  return config;
+function assignViewerBoolean(
+  config: DeepPartial<F8Config>,
+  key: ViewerBooleanKey,
+  name: string,
+  value: string | undefined
+): void {
+  const parsed = parseBooleanEnv(name, value);
+  if (parsed !== undefined) {
+    config.viewer = { ...(config.viewer ?? {}), [key]: parsed };
+  }
+}
+
+function assignViewerCaptionAlign(
+  config: DeepPartial<F8Config>,
+  name: string,
+  value: string | undefined
+): void {
+  const parsed = parseCaptionAlignEnv(name, value);
+  if (parsed !== undefined) {
+    config.viewer = { ...(config.viewer ?? {}), captionAlign: parsed };
+  }
 }
 
 function assignString<T extends object, K extends keyof T>(
@@ -192,6 +250,22 @@ function assignString<T extends object, K extends keyof T>(
   if (value !== undefined && value.length > 0) {
     target[key] = value as T[K];
   }
+}
+
+function parseCaptionAlignEnv(
+  name: string,
+  value: string | undefined
+): F8CaptionAlign | undefined {
+  if (value === undefined || value === '') {
+    return undefined;
+  }
+
+  const normalized = value.toLowerCase();
+  if (isF8CaptionAlign(normalized)) {
+    return normalized;
+  }
+
+  throw new F8ConfigError(`${name} must be left, center, or right.`);
 }
 
 function parseBooleanEnv(

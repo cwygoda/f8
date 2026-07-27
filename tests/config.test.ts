@@ -27,6 +27,8 @@ describe('loadConfig', () => {
     expect(result.config.viewer.enableMapZoom).toBe(true);
     expect(result.config.viewer.showMapAttribution).toBe(false);
     expect(result.config.viewer.enableMapMarkerLink).toBe(true);
+    expect(result.config.viewer.showCaptions).toBe(true);
+    expect(result.config.viewer.captionAlign).toBe('left');
     expect(result.config.viewer.mapMarkerUrlTemplate).toContain(
       'earth.google.com'
     );
@@ -45,6 +47,7 @@ describe('loadConfig', () => {
 
 [viewer]
 enableMap = true
+captionAlign = "right"
 mapStyleUrl = "https://example.com/style.json"
 mapMarkerUrlTemplate = "https://example.com/?lat={lat}&lng={lng}"
 `,
@@ -58,6 +61,8 @@ mapMarkerUrlTemplate = "https://example.com/?lat={lat}&lng={lng}"
         F8_ENABLE_MAP_ZOOM: 'false',
         F8_SHOW_MAP_ATTRIBUTION: 'true',
         F8_ENABLE_MAP_MARKER_LINK: 'false',
+        F8_SHOW_VIEWER_CAPTIONS: 'false',
+        F8_VIEWER_CAPTION_ALIGN: 'center',
         F8_MAP_STYLE_URL: 'https://example.com/env-style.json',
         F8_MAP_MARKER_URL_TEMPLATE: 'https://example.com/env?lat={lat}',
         F8_INCLUDE_GPS_METADATA: 'true',
@@ -71,6 +76,8 @@ mapMarkerUrlTemplate = "https://example.com/?lat={lat}&lng={lng}"
     expect(result.config.viewer.enableMapZoom).toBe(false);
     expect(result.config.viewer.showMapAttribution).toBe(true);
     expect(result.config.viewer.enableMapMarkerLink).toBe(false);
+    expect(result.config.viewer.showCaptions).toBe(false);
+    expect(result.config.viewer.captionAlign).toBe('center');
     expect(result.config.viewer.mapStyleUrl).toBe(
       'https://example.com/env-style.json'
     );

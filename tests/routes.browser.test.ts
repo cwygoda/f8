@@ -47,6 +47,7 @@ describe('static Markdown page viewer', () => {
     expect(
       document.querySelector('[data-f8-viewer-image="demo-image"]')
     ).not.toBeNull();
+    expect(document.querySelector('.f8-viewer__caption')).toBeNull();
   });
 });
 
@@ -68,6 +69,8 @@ function pageFixture() {
       enableMapZoom: true,
       showMapAttribution: false,
       enableMapMarkerLink: true,
+      showCaptions: false,
+      captionAlign: 'left' as const,
       mapMarkerUrlTemplate: 'https://earth.google.com/web/@{lat},{lng}',
       enableExifOverlay: true,
       mapStyleUrl: 'https://tiles.openfreemap.org/styles/liberty'

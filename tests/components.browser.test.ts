@@ -43,6 +43,60 @@ describe('F8 UI components', () => {
     ).not.toBeNull();
   });
 
+  it('hides viewer captions when disabled per image', async () => {
+    const target = document.createElement('div');
+    document.body.append(target);
+    mounted.push(
+      mount(F8Viewer, {
+        target,
+        props: {
+          images: [
+            {
+              ...imageFixture('one'),
+              viewer: { showCaption: false }
+            }
+          ],
+          open: true,
+          enableMap: false
+        }
+      })
+    );
+    await tick();
+
+    expect(document.querySelector('.f8-viewer__caption')).toBeNull();
+    expect(
+      document
+        .querySelector('[role="dialog"]')
+        ?.hasAttribute('aria-describedby')
+    ).toBe(false);
+  });
+
+  it('uses per-image viewer caption alignment', async () => {
+    const target = document.createElement('div');
+    document.body.append(target);
+    mounted.push(
+      mount(F8Viewer, {
+        target,
+        props: {
+          images: [
+            {
+              ...imageFixture('one'),
+              viewer: { captionAlign: 'right' }
+            }
+          ],
+          open: true,
+          enableMap: false,
+          captionAlign: 'center'
+        }
+      })
+    );
+    await tick();
+
+    const caption = document.querySelector<HTMLElement>('.f8-viewer__caption');
+    expect(caption?.dataset.f8CaptionAlign).toBe('right');
+    expect(caption?.classList.contains('f8-viewer__caption--right')).toBe(true);
+  });
+
   it('supports viewer keyboard navigation, Escape close, and focus restoration', async () => {
     const focusBefore = document.createElement('button');
     focusBefore.textContent = 'Before';

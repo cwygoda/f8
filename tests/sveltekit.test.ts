@@ -68,11 +68,14 @@ describe('f8 SvelteKit integration', () => {
       `---
 title: Kyoto in Rain
 description: A quiet walk.
+viewer:
+  showCaptions: false
+  captionAlign: right
 ---
 
 # Kyoto in Rain
 
-![](./rain.png)
+![](./rain.png 'Rain from Markdown')
 `,
       'utf8'
     );
@@ -106,6 +109,9 @@ formats = ["webp"]
 
     expect(page?.seo.title).toBe('Kyoto in Rain');
     expect(page?.seo.canonical).toBe('https://example.com/');
+    expect(page?.viewer.showCaptions).toBe(false);
+    expect(page?.viewer.captionAlign).toBe('right');
+    expect(page?.images[0]?.title).toBe('Rain from Markdown');
     expect(page?.html).toContain('data-f8-block="figure"');
     expect(page?.html).toContain('/@f8/');
     expect(page?.html).toContain('/rain/rain-8.webp');
