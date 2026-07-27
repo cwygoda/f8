@@ -29,7 +29,7 @@ import type {
   F8Location
 } from '../types.js';
 
-export const PIPELINE_VERSION = '2.0.1';
+export const PIPELINE_VERSION = '2.0.3';
 export const SUPPORTED_IMAGE_EXTENSIONS = [
   '.jpg',
   '.jpeg',
@@ -496,7 +496,8 @@ async function buildVariant(input: {
   transformer = applyFormat(
     transformer,
     input.format,
-    input.config.image.quality[input.format]
+    input.config.image.quality[input.format],
+    input.config.image.jpegChromaSubsampling
   );
   await transformer.toFile(input.outputPath);
 
@@ -521,7 +522,8 @@ function interpolationToKernel(
 function applyFormat(
   transformer: Sharp,
   format: F8ImageFormat,
-  quality: number
+  quality: number,
+  jpegChromaSubsampling: F8Config['image']['jpegChromaSubsampling']
 ): Sharp {
   if (format === 'avif') {
     return transformer.avif({ quality });
@@ -535,7 +537,11 @@ function applyFormat(
     return transformer.png({ quality });
   }
 
-  return transformer.jpeg({ quality, mozjpeg: true });
+  return transformer.jpeg({
+    quality,
+    mozjpeg: true,
+    chromaSubsampling: jpegChromaSubsampling
+  });
 }
 
 async function createBlurhash(sourcePath: string): Promise<string | undefined> {

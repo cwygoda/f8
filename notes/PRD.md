@@ -575,7 +575,7 @@ interpolation = "mks"
 [image.quality]
 avif = 72
 webp = 82
-jpeg = 88
+jpeg = 90
 
 [gallery]
 layout = "masonry"

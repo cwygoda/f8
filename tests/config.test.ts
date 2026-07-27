@@ -21,6 +21,8 @@ describe('loadConfig', () => {
     expect(result.path).toBeUndefined();
     expect(result.config.contentDir).toBe('content');
     expect(result.config.image.widths).toContain(1024);
+    expect(result.config.image.quality.jpeg).toBe(90);
+    expect(result.config.image.jpegChromaSubsampling).toBe('4:4:4');
     expect(result.config.viewer.enableMap).toBe(true);
     expect(result.config.viewer.enableMapZoom).toBe(true);
     expect(result.config.viewer.showMapAttribution).toBe(false);

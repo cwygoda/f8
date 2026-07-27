@@ -85,7 +85,7 @@ After `pnpm build`, the package binary is emitted at `dist/cli/index.js`.
 3. `.f8.toml`
 4. Defaults
 
-Image pipeline configuration supports widths, formats, quality, no-upscale behavior, linear resize, and interpolation settings. Privacy defaults avoid publishing GPS metadata (`privacy.includeGpsMetadata = false`) and strip metadata from generated variants (`privacy.stripOutputMetadata = true`). Set `privacy.includeExifMetadata = false` to hide camera settings from generated metadata and overlays.
+Image pipeline configuration supports widths, formats, quality, no-upscale behavior, linear resize, interpolation settings, and JPEG chroma subsampling (`image.jpegChromaSubsampling`, default `4:4:4`). Privacy defaults avoid publishing GPS metadata (`privacy.includeGpsMetadata = false`) and strip metadata from generated variants (`privacy.stripOutputMetadata = true`). Set `privacy.includeExifMetadata = false` to hide camera settings from generated metadata and overlays.
 
 Supported environment variables in the current foundation:
 

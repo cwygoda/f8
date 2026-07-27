@@ -22,11 +22,12 @@ export const f8ImageConfigSchema = z
     interpolation: z
       .enum(['mks', 'lanczos3', 'cubic', 'nearest'])
       .default('mks'),
+    jpegChromaSubsampling: z.enum(['4:2:0', '4:4:4']).default('4:4:4'),
     quality: z
       .object({
         avif: z.number().int().min(1).max(100).default(72),
         webp: z.number().int().min(1).max(100).default(82),
-        jpeg: z.number().int().min(1).max(100).default(88),
+        jpeg: z.number().int().min(1).max(100).default(90),
         png: z.number().int().min(1).max(100).default(90)
       })
       .prefault({})

@@ -8,11 +8,12 @@ formats = ["avif", "webp", "jpeg"]
 allowUpscale = false
 linearResize = true
 interpolation = "mks"
+jpegChromaSubsampling = "4:4:4"
 
 [image.quality]
 avif = 72
 webp = 82
-jpeg = 88
+jpeg = 90
 
 [gallery]
 layout = "masonry"

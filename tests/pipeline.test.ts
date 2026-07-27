@@ -150,6 +150,39 @@ Sidecar caption.
     expect(existsSync(image.exifPath)).toBe(true);
   });
 
+  it('writes JPEG variants without chroma subsampling', async () => {
+    const cwd = fixtureDir();
+    const imageRoot = join(cwd, 'content');
+    await writeImage(join(imageRoot, 'photo.jpg'), {
+      width: 80,
+      height: 40
+    });
+
+    const image = await processImage('content/photo.jpg', {
+      cwd,
+      imageRoot,
+      config: f8ConfigSchema.parse({
+        cacheDir: '.f8/cache',
+        image: {
+          widths: [32],
+          formats: ['jpeg'],
+          allowUpscale: false
+        }
+      })
+    });
+    const jpegVariant = image.metadata.variants.find(
+      (variant) => variant.format === 'jpeg'
+    );
+
+    if (jpegVariant === undefined) {
+      throw new Error('Expected JPEG variant.');
+    }
+
+    const metadata = await sharp(join(cwd, jpegVariant.src)).metadata();
+
+    expect(metadata.chromaSubsampling).toBe('4:4:4');
+  });
+
   it('omits GPS metadata by default and includes it only when configured', async () => {
     const cwd = fixtureDir();
     const imageRoot = join(cwd, 'content');
