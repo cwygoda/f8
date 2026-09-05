@@ -49,7 +49,7 @@ jobs:
       - uses: pnpm/action-setup@v4
         if: steps.current.outputs.current == 'true'
         with:
-          version: 11.6.0
+          version: 11.25.0
       - uses: actions/setup-node@v7
         if: steps.current.outputs.current == 'true'
         with:
