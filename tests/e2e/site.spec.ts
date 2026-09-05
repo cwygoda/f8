@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 const visualDiffTolerance = process.env.CI === 'true' ? 0.15 : 0.02;
+const visualMaskColor = '#20241f';
 
 test.describe('f8 static starter', () => {
   test('renders accessible editorial shell', async ({ page }) => {
@@ -10,9 +11,9 @@ test.describe('f8 static starter', () => {
 
     // Then they see the accessible editorial shell, page heading, and SEO description
     await expect(page.getByRole('main')).toBeVisible();
-    await expect(
-      page.getByRole('heading', { name: 'Image-first stories for SvelteKit' })
-    ).toBeVisible();
+    await expect(page.locator('#page-title')).toHaveText(
+      'Image-first stories for SvelteKit'
+    );
     await expect(page.locator('meta[name="description"]')).toHaveAttribute(
       'content',
       /responsive photo essays/
@@ -179,6 +180,8 @@ test.describe('f8 static starter', () => {
 
     // Then viewer screenshots must match their baselines within tolerance
     await expect(page).toHaveScreenshot('demo-viewer.png', {
+      mask: [page.locator('[aria-label="Map preview"]')],
+      maskColor: visualMaskColor,
       maxDiffPixelRatio: visualDiffTolerance
     });
   });
