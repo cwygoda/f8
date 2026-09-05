@@ -21,11 +21,11 @@
 - Privacy controls for GPS/EXIF metadata and output metadata stripping
 - Markdown URL sanitization and unprocessed-image safeguards
 - semantic-release automation for Conventional Commit releases, changelogs, tags, and GitHub Releases
-- ESLint, complexity checks, Prettier, Commitlint, Husky, and CI workflow
+- Oxlint, Oxfmt, Commitlint, Husky, and CI workflow
 
 ## Requirements
 
-- Node.js 24+
+- Node.js 24.15+
 - pnpm 11+
 - Optional: [`mise`](https://mise.jdx.dev/) and [`task`](https://taskfile.dev/)
 
@@ -45,7 +45,7 @@ pnpm install
 
 ```bash
 pnpm dev      # start SvelteKit dev server
-pnpm lint     # ESLint + Prettier checks
+pnpm lint     # Oxlint + Oxfmt checks
 pnpm test     # Vitest unit, browser, and accessibility tests
 pnpm test:e2e # Playwright tests across configured viewports
 pnpm build    # SvelteKit build + package artifacts + CLI build

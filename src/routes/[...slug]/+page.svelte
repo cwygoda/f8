@@ -103,7 +103,6 @@
     bind:this={articleElement}
     class="f8-page prose prose-f8 prose-lg sm:prose-xl"
   >
-    <!-- eslint-disable-next-line svelte/no-at-html-tags -->
     {@html page.html}
   </article>
 

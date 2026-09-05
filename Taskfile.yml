@@ -9,7 +9,7 @@ tasks:
       - pnpm install
 
   lint:
-    desc: Run ESLint and Prettier checks
+    desc: Run Oxlint and Oxfmt checks
     cmds:
       - pnpm lint
 
